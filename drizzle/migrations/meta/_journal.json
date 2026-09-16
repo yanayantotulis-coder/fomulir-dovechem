@@ -8,6 +8,13 @@
       "when": 1789530068073,
       "tag": "0000_create_application_system",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789530100123,
+      "tag": "0001_candidate_files_storage_policies",
+      "breakpoints": true
     }
   ]
 }
