@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFormulirRouteImport } from './routes/_authenticated/formulir'
+import { Route as AuthenticatedHrRouteImport } from './routes/_authenticated/hr'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,18 +40,25 @@ const AuthenticatedFormulirRoute = AuthenticatedFormulirRouteImport.update({
   path: '/formulir',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHrRoute = AuthenticatedHrRouteImport.update({
+  id: '/hr',
+  path: '/hr',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/formulir': typeof AuthenticatedFormulirRoute
+  '/hr': typeof AuthenticatedHrRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/formulir': typeof AuthenticatedFormulirRoute
+  '/hr': typeof AuthenticatedHrRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +67,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/formulir': typeof AuthenticatedFormulirRoute
+  '/_authenticated/hr': typeof AuthenticatedHrRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/formulir'
+  fullPaths: '/' | '/auth' | '/dashboard' | '/formulir' | '/hr'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/formulir'
+  to: '/' | '/auth' | '/dashboard' | '/formulir' | '/hr'
   id:
     | '__root__'
     | '/'
@@ -72,6 +81,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/formulir'
+    | '/_authenticated/hr'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,17 +127,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFormulirRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/hr': {
+      id: '/_authenticated/hr'
+      path: '/hr'
+      fullPath: '/hr'
+      preLoaderRoute: typeof AuthenticatedHrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFormulirRoute: typeof AuthenticatedFormulirRoute
+  AuthenticatedHrRoute: typeof AuthenticatedHrRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFormulirRoute: AuthenticatedFormulirRoute,
+  AuthenticatedHrRoute: AuthenticatedHrRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
