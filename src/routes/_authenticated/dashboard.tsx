@@ -59,7 +59,7 @@ function progressOf(app: ApplicationRecord) {
 function Dashboard() {
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [docType, setDocType] = useState(DOC_TYPES[0]?.value ?? "photo");
+  const [docType, setDocType] = useState(DOC_TYPES[0]?.key ?? "photo");
 
   const rolesQuery = useQuery({ queryKey: ["my-roles"], queryFn: fetchMyRoles });
   const appQuery = useQuery<ApplicationRecord>({
@@ -161,7 +161,7 @@ function Dashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   {DOC_TYPES.map((d) => (
-                    <SelectItem key={d.value} value={d.value}>
+                    <SelectItem key={d.key} value={d.key}>
                       {d.label}
                     </SelectItem>
                   ))}
@@ -191,7 +191,7 @@ function Dashboard() {
                   <div>
                     <p className="text-sm font-medium text-foreground">{doc.file_name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {DOC_TYPES.find((d) => d.value === doc.doc_type)?.label ?? doc.doc_type} •{" "}
+                      {DOC_TYPES.find((d) => d.key === doc.doc_type)?.label ?? doc.doc_type} •{" "}
                       {new Date(doc.created_at).toLocaleDateString("id-ID")}
                     </p>
                   </div>
