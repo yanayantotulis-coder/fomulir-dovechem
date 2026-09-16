@@ -99,7 +99,7 @@ export async function downloadDocx(data: ApplicationData) {
     new TableCell({
       borders,
       width: { size: width, type: WidthType.DXA },
-      shading: fill ? { fill, type: ShadingType.CLEAR } : undefined,
+      ...(fill ? { shading: { fill, type: ShadingType.CLEAR } } : {}),
       margins: { top: 60, bottom: 60, left: 100, right: 100 },
       children: [new Paragraph({ children: [new TextRun({ text, bold, size: 18 })] })],
     });
