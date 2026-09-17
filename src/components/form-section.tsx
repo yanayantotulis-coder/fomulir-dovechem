@@ -1,4 +1,4 @@
-import type { Section, TableDef, Field, ApplicationData } from "@/lib/form-schema";
+import { LANGUAGE_LEVELS, type Section, type TableDef, type Field, type ApplicationData } from "@/lib/form-schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -108,15 +108,27 @@ export function FormSection({ section, data, onChange }: Props) {
               {rows.map((row, rowIndex) => (
                 <tr key={rowIndex} className="even:bg-muted/20">
                   {table.columns.map((col, colIndex) => {
-                    const locked = Boolean(table.presets && colIndex === 0);
+                    const locked = Boolean(table.presets && colIndex === 0 && table.presets.includes(String(row[col.key] ?? "")) && row[col.key]);
+                    const label = `${table.labelId}, baris ${rowIndex + 1}, ${col.label}`;
+                    const updateCell = (value: unknown) => setTableRows(table, rows.map((r, i) => i === rowIndex ? { ...r, [col.key]: value } : r));
                     return (
                       <td key={col.key} className="border-b border-border/70 px-1.5 py-1">
                         {locked ? (
                           <span className="block px-1 text-xs font-medium text-foreground">
                             {String(row[col.key] ?? "")}
                           </span>
-                        ) : (
+                         ) : col.type === "checkbox" ? (
+                           <Checkbox aria-label={label} checked={row[col.key] === true || row[col.key] === "true"} onCheckedChange={(value) => updateCell(value === true)} />
+                         ) : col.type === "select" ? (
+                           <Select value={String(row[col.key] ?? "")} onValueChange={updateCell}>
+                             <SelectTrigger aria-label={label}><SelectValue placeholder="Pilih..." /></SelectTrigger>
+                             <SelectContent>{LANGUAGE_LEVELS.map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                           </Select>
+                         ) : col.type === "textarea" ? (
+                           <Textarea aria-label={label} rows={3} value={String(row[col.key] ?? "")} onChange={(e) => updateCell(e.target.value)} />
+                         ) : (
                           <Input
+                             aria-label={label}
                             className="h-9 border-0 bg-transparent shadow-none focus-visible:ring-1"
                             type={col.type === "date" ? "date" : "text"}
                             value={String(row[col.key] ?? "")}

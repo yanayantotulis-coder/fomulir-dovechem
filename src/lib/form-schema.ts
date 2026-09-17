@@ -47,6 +47,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "I",
     title: "PERSONAL DATA",
     titleId: "DATA PRIBADI",
+    note: "Foto ukuran 3 x 4 / Photo size 3 x 4. Pilih salah satu jenis kelamin dan status tempat tinggal / Choose one gender and residence status.",
     fields: [
       { key: "position", label: "Position Applied", labelId: "Posisi yang dilamar" },
       { key: "fullName", label: "Full Name", labelId: "Nama Lengkap" },
@@ -89,7 +90,7 @@ export const FORM_SECTIONS: Section[] = [
         label: "Residence Status",
         labelId: "Status Tempat Tinggal",
         type: "select",
-        options: ["Milik Sendiri", "Milik Orang Tua", "Kontrak / Sewa"],
+        options: ["Milik Sendiri", "Milik Orang Tua", "Kontrak / Sewa", "Kos / Board"],
       },
       {
         key: "homeAddress",
@@ -105,7 +106,7 @@ export const FORM_SECTIONS: Section[] = [
         label: "Residence Status (Home)",
         labelId: "Status Tempat Tinggal (Asal)",
         type: "select",
-        options: ["Milik Sendiri", "Milik Orang Tua", "Kontrak / Sewa"],
+        options: ["Milik Sendiri", "Milik Orang Tua", "Kontrak / Sewa", "Kos / Board"],
       },
     ],
   },
@@ -148,6 +149,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "III",
     title: "EDUCATIONAL BACKGROUND AND LANGUAGE COMPETENCIES",
     titleId: "LATAR BELAKANG PENDIDIKAN DAN KEMAMPUAN BERBAHASA",
+    note: "Mohon pilih Aktif atau Pasif sesuai kemampuan lisan dan tulisan Anda. Bahasa asing lainnya dapat dituliskan pada baris kosong / Please indicate your spoken and written language competencies.",
     tables: [
       {
         key: "formal",
@@ -168,7 +170,7 @@ export const FORM_SECTIONS: Section[] = [
       {
         key: "nonFormal",
         label: "Non Formal Education (Course, Training, Seminar)",
-        labelId: "Pendidikan Non Formal (Kursus, Pelatihan, Seminar)",
+        labelId: "Pendidikan Non Formal (Kursus, Pelatihan, Seminar, Lokakarya, dll)",
         columns: [
           { key: "name", label: "Nama Kursus / Pelatihan" },
           { key: "heldBy", label: "Penyelenggara" },
@@ -264,8 +266,8 @@ export const FORM_SECTIONS: Section[] = [
           { key: "salary", label: "Gaji" },
           { key: "from", label: "Dari (Bln/Thn)" },
           { key: "until", label: "Sampai (Bln/Thn)" },
-          { key: "jobDesc", label: "Gambaran Pekerjaan" },
-          { key: "reasonLeave", label: "Alasan Berhenti" },
+          { key: "jobDesc", label: "Gambaran Pekerjaan", type: "textarea" },
+          { key: "reasonLeave", label: "Alasan Berhenti", type: "textarea" },
         ],
         rows: 3,
         addable: true,
@@ -273,7 +275,7 @@ export const FORM_SECTIONS: Section[] = [
       {
         key: "supervisors",
         label: "Former Supervisors",
-        labelId: "Atasan Sebelumnya",
+        labelId: "Orang-orang yang pernah menjadi atasan dalam karier Anda pada perusahaan di atas",
         columns: [
           { key: "name", label: "Nama" },
           { key: "position", label: "Jabatan" },
@@ -290,6 +292,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "VI",
     title: "MEDICAL HISTORY",
     titleId: "RIWAYAT KESEHATAN",
+    note: "Silahkan berikan tanda checklist (√) dan keterangan sesuai dengan riwayat kesehatan Anda / Please give checklist (√) and notes, based on your medical history.",
     tables: [
       {
         key: "diseases",
@@ -325,7 +328,7 @@ export const FORM_SECTIONS: Section[] = [
       {
         key: "refs",
         label: "References",
-        labelId: "Referensi",
+        labelId: "Nama kerabat untuk referensi Anda",
         columns: [
           { key: "name", label: "Nama" },
           { key: "phone", label: "No Telepon" },
@@ -339,7 +342,7 @@ export const FORM_SECTIONS: Section[] = [
       {
         key: "emergency",
         label: "Emergency Contacts",
-        labelId: "Kontak Darurat",
+        labelId: "Orang yang dapat dihubungi segera dalam keadaan mendesak/darurat",
         columns: [
           { key: "name", label: "Nama" },
           { key: "relation", label: "Hubungan" },
@@ -355,6 +358,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "VIII",
     title: "OTHERS",
     titleId: "LAIN-LAIN",
+    note: "Silahkan berikan tanda checklist (√) dan keterangan sesuai dengan kesediaan Anda / Please give checklist (√) and notes, based on your availability.",
     fields: [
       {
         key: "relocate",
@@ -372,22 +376,22 @@ export const FORM_SECTIONS: Section[] = [
       { key: "businessTripNotes", label: "Notes", labelId: "Keterangan perjalanan dinas" },
       {
         key: "relativesGGB",
-        label: "Relatives working in GGB Group",
-        labelId: "Keluarga / kerabat yang bekerja di Group GOLDEN GREAT BORNEO",
+        label: "Do you have any relatives working in GGB Group? Please state!",
+        labelId: "Apakah Anda memiliki keluarga, kerabat, atau teman yang bekerja di Group GOLDEN GREAT BORNEO? Sebutkan!",
         type: "textarea",
         full: true,
       },
       {
         key: "appliedBefore",
         label: "Have you applied to GGB Group before? When and what position?",
-        labelId: "Pernah melamar ke Group GGB sebelumnya? Kapan dan posisi apa?",
+        labelId: "Apakah Anda pernah melamar ke Group GOLDEN GREAT BORNEO sebelumnya? Jika ya, kapan dan untuk posisi apa?",
         type: "textarea",
         full: true,
       },
       {
         key: "policeRecord",
-        label: "Ever engaged with Police Department, court or civil cases?",
-        labelId: "Pernah terlibat dengan Kepolisian, persidangan atau perkara perdata?",
+        label: "Have you ever officially engaged with Police Department in relation to criminal issue, court of justice or civil cases?",
+        labelId: "Apakah Anda pernah terlibat dengan pihak Kepolisian berkaitan dengan isu pelanggaran kriminal, persidangan atau pelanggaran perdata?",
         type: "textarea",
         full: true,
       },
@@ -410,7 +414,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "IX",
     title: "REMUNERATION PACKAGE",
     titleId: "PAKET REMUNERASI",
-    note: "Isi sesuai fakta pada slip gaji atau kontrak kerja Anda.",
+    note: "Silahkan isi bagian ini sesuai dengan fakta yang tercatat pada slip gaji atau kontrak kerja Anda. Nominal gaji dalam Rupiah (Rp.) / Please fill this section with true fact as stated on your salary slip or contract agreement.",
     tables: [
       {
         key: "salary",
@@ -436,7 +440,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "X",
     title: "DECLARATION",
     titleId: "PERNYATAAN",
-    note: "Dengan ini Saya menyatakan bahwa semua data yang Saya tuliskan di atas adalah benar. Saya menyadari bahwa ketidakjujuran mengenai data-data di atas dapat mengakibatkan pembatalan atau pemutusan hubungan kerja dari pihak perusahaan.",
+    note: "Dengan ini Saya menyatakan bahwa semua data yang Saya tuliskan di atas adalah benar. Saya menyadari bahwa ketidakjujuran mengenai data-data di atas dapat mengakibatkan pembatalan atau pemutusan hubungan kerja dari pihak perusahaan. I declare that all information given herein is true and correct. I understand that any misrepresentation or omission of facts will be sufficient cause for cancellation of consideration for employment or dismissal from the Company’s service if I have been employed.",
     fields: [
       { key: "city", label: "City", labelId: "Kota" },
       { key: "date", label: "Date", labelId: "Tanggal", type: "date" },
