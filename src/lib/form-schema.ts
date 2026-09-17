@@ -597,7 +597,7 @@ export function validateSection(section: Section, data: ApplicationData): Sectio
   }
 
   const maritalStatus = String(
-    ((data.personal ?? {}) as Record<string, unknown>).maritalStatus ?? "",
+    ((data["personal"] ?? {}) as Record<string, unknown>)["maritalStatus"] ?? "",
   );
   const isSingle = maritalStatus.includes("Belum Menikah");
 
