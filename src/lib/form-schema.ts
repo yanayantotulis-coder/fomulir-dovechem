@@ -562,6 +562,8 @@ const OPTIONAL_FIELDS = new Set([
 
 /** Baris tabel yang wajib lengkap. Tabel yang tidak terdaftar bersifat opsional. */
 const TABLE_RULES: Record<string, { rows: number; columns?: string[] }> = {
+  spouseChildren: { rows: 1, columns: ["name", "birthday", "education", "job"] },
+  familyTree: { rows: 1, columns: ["name", "birthday", "education", "job"] },
   formal: { rows: 1, columns: ["level", "school", "major", "from", "until"] },
   languages: { rows: 1, columns: ["language", "spoken", "written"] },
   refs: { rows: 1 },
