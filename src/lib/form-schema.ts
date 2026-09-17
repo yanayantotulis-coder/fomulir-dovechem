@@ -596,7 +596,14 @@ export function validateSection(section: Section, data: ApplicationData): Sectio
     if (isEmptyValue(value)) fields[field.key] = "Wajib diisi";
   }
 
+  const maritalStatus = String(
+    ((data.personal ?? {}) as Record<string, unknown>).maritalStatus ?? "",
+  );
+  const isSingle = maritalStatus.includes("Belum Menikah");
+
   for (const table of section.tables ?? []) {
+    // Kandidat yang belum menikah tidak memiliki pasangan/anak untuk diisi.
+    if (table.key === "spouseChildren" && isSingle) continue;
     const rule = TABLE_RULES[table.key];
     if (!rule) continue;
     const rows = (Array.isArray(values[table.key]) ? values[table.key] : []) as Record<
