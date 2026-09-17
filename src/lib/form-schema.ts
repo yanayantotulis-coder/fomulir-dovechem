@@ -184,7 +184,7 @@ export const FORM_SECTIONS: Section[] = [
           { key: "date", label: "Tgl/Bln/Thn" },
           { key: "notes", label: "Keterangan" },
         ],
-        rows: 4,
+        rows: 1,
         addable: true,
       },
       {
