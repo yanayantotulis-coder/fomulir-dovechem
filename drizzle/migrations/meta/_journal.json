@@ -15,6 +15,13 @@
       "when": 1789530100123,
       "tag": "0001_candidate_files_storage_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789608149487,
+      "tag": "0002_harden_functions_and_role_policies",
+      "breakpoints": true
     }
   ]
 }
