@@ -57,8 +57,13 @@ export async function downloadPdf(data: ApplicationData) {
         image.complete
           ? Promise.resolve()
           : new Promise<void>((resolve) => {
-              image.addEventListener("load", () => resolve(), { once: true });
-              image.addEventListener("error", () => resolve(), { once: true });
+              const timeout = window.setTimeout(resolve, 5000);
+              const finish = () => {
+                window.clearTimeout(timeout);
+                resolve();
+              };
+              image.addEventListener("load", finish, { once: true });
+              image.addEventListener("error", finish, { once: true });
             }),
       ),
     );
