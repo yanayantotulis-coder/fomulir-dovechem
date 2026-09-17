@@ -83,6 +83,9 @@ function HrPage() {
   const [previewDoc, setPreviewDoc] = useState<AllDocumentRecord | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ApplicationRecord | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const queryClient = useQueryClient();
 
   const rolesQuery = useQuery({ queryKey: ["my-roles"], queryFn: fetchMyRoles });
   const isStaff = (rolesQuery.data ?? []).some((r) => r === "hr" || r === "admin");
@@ -130,6 +133,24 @@ function HrPage() {
       toast.error(error instanceof Error ? error.message : "Gagal membuat berkas gabungan.");
     } finally {
       setZipBusy(null);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    try {
+      await deleteApplicationWithDocuments(deleteTarget.id);
+      toast.success("Data kandidat berhasil dihapus.");
+      setDeleteTarget(null);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["all-applications"] }),
+        queryClient.invalidateQueries({ queryKey: ["all-documents"] }),
+      ]);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus data kandidat.");
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
