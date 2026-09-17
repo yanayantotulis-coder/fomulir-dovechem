@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { StaffToolbar } from "@/components/staff-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -90,15 +91,16 @@ function HrPage() {
 
   return (
     <AppShell isStaff>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">Bank Data Kandidat</h1>
-          <p className="text-sm text-muted-foreground">
+       <div className="flex flex-wrap items-end justify-between gap-4">
+         <div className="border-l-4 border-admin-accent pl-4">
+           <h1 className="font-admin-display text-2xl font-bold text-foreground">Bank Data Kandidat</h1>
+           <p className="font-admin text-sm text-muted-foreground">
             {rows.length} kandidat terdaftar dalam sistem.
           </p>
         </div>
         <Button onClick={() => downloadCandidateBankXlsx(rows)}>Unduh rekap Excel</Button>
       </div>
+       <StaffToolbar />
 
       <div className="mt-5 max-w-md">
         <Input
