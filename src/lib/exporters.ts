@@ -54,10 +54,15 @@ export async function downloadPdf(data: ApplicationData) {
     if (block.type === "image") {
       if (!signature.startsWith("data:image/png;base64,")) continue;
       ensureSpace(80);
-      doc.addImage(signature, "PNG", marginX, cursor, 170, 62);
-      cursor += 70;
-      signaturePlaced = true;
+      try {
+        doc.addImage(signature, "PNG", marginX, cursor, 170, 62);
+        cursor += 70;
+        signaturePlaced = true;
+      } catch {
+        signaturePlaced = true;
+      }
       continue;
+
     }
     autoTable(doc, {
       startY: cursor,
