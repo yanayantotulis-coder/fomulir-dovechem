@@ -23,12 +23,6 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
             PT. DOVER CHEMICAL
           </Link>
           <nav className="flex flex-1 flex-wrap gap-1">
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/dashboard">Dashboard</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/formulir">Formulir</Link>
-            </Button>
             {isStaff ? (
               <>
                 <Button asChild variant="ghost" size="sm">
@@ -38,7 +32,16 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
                   <Link to="/hr">Bank Data HR</Link>
                 </Button>
               </>
-            ) : null}
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/formulir">Pengisian Formulir</Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/dashboard">Unggah Berkas</Link>
+                </Button>
+              </>
+            )}
           </nav>
           <Button variant="outline" size="sm" onClick={signOut}>
             Keluar
