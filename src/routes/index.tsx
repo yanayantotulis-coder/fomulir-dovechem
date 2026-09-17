@@ -168,27 +168,6 @@ function Landing() {
               <Link to="/auth">Sudah punya akun</Link>
             </Button>
           </div>
-
-          <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-surface-foreground/20 pt-8">
-            <div>
-              <dt className="text-xs uppercase tracking-widest text-surface-foreground/60">
-                Bagian formulir
-              </dt>
-              <dd className="mt-1 font-display text-3xl font-bold text-accent">10</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-widest text-surface-foreground/60">
-                Format unduhan
-              </dt>
-              <dd className="mt-1 font-display text-3xl font-bold text-accent">3</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-widest text-surface-foreground/60">
-                Biaya
-              </dt>
-              <dd className="mt-1 font-display text-3xl font-bold text-accent">Gratis</dd>
-            </div>
-          </dl>
         </div>
       </section>
 
