@@ -161,6 +161,28 @@ export async function deleteDocument(doc: DocumentRecord) {
   if (storageError) throw storageError;
 }
 
+/** Staff-only: hapus data lamaran kandidat beserta seluruh dokumennya. */
+export async function deleteApplicationWithDocuments(applicationId: string) {
+  const { data: docs, error: docsError } = await supabase
+    .from("application_documents")
+    .select("id, file_path")
+    .eq("application_id", applicationId);
+  if (docsError) throw docsError;
+
+  const paths = (docs ?? []).map((d) => d.file_path);
+  if (paths.length > 0) {
+    const { error: delDocsError } = await supabase
+      .from("application_documents")
+      .delete()
+      .eq("application_id", applicationId);
+    if (delDocsError) throw delDocsError;
+    await supabase.storage.from("candidate-files").remove(paths);
+  }
+
+  const { error } = await supabase.from("applications").delete().eq("id", applicationId);
+  if (error) throw error;
+}
+
 export type CandidateLoginRecord = {
   id: string;
   full_name: string | null;
