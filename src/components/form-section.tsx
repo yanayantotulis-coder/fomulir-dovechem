@@ -1,4 +1,13 @@
-import { LANGUAGE_LEVELS, type Section, type TableDef, type Field, type ApplicationData } from "@/lib/form-schema";
+import {
+  LANGUAGE_LEVELS,
+  isFieldRequired,
+  isTableRequired,
+  type Section,
+  type SectionErrors,
+  type TableDef,
+  type Field,
+  type ApplicationData,
+} from "@/lib/form-schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -19,9 +28,10 @@ type Props = {
   section: Section;
   data: ApplicationData;
   onChange: (sectionId: string, key: string, value: unknown) => void;
+  errors?: SectionErrors | undefined;
 };
 
-export function FormSection({ section, data, onChange }: Props) {
+export function FormSection({ section, data, onChange, errors }: Props) {
   const values = (data[section.id] ?? {}) as Record<string, unknown>;
 
   const setTableRows = (table: TableDef, rows: Row[]) => onChange(section.id, table.key, rows);
@@ -29,6 +39,8 @@ export function FormSection({ section, data, onChange }: Props) {
   const renderField = (field: Field) => {
     const value = values[field.key];
     const id = `${section.id}-${field.key}`;
+    const required = isFieldRequired(section.id, field.key);
+    const error = errors?.fields[field.key];
     return (
       <div key={field.key} className={field.full || field.type === "textarea" ? "md:col-span-2" : ""}>
         <label htmlFor={id} className="label-form">
@@ -36,6 +48,15 @@ export function FormSection({ section, data, onChange }: Props) {
           <span className="ml-1 font-normal normal-case text-muted-foreground/70">
             / {field.labelId}
           </span>
+          {required ? (
+            <span className="ml-1 text-destructive" aria-hidden="true">
+              *
+            </span>
+          ) : (
+            <span className="ml-1 font-normal normal-case text-muted-foreground/60">
+              (opsional)
+            </span>
+          )}
         </label>
         <div className="mt-1.5">
           {field.type === "textarea" ? (
@@ -83,18 +104,28 @@ export function FormSection({ section, data, onChange }: Props) {
             />
           )}
         </div>
+        {error ? <p className="mt-1 text-xs font-medium text-destructive">{error}</p> : null}
       </div>
     );
   };
 
   const renderTable = (table: TableDef) => {
     const rows = (Array.isArray(values[table.key]) ? values[table.key] : []) as Row[];
+    const tableError = errors?.tables[table.key];
     return (
       <div key={table.key} className="mt-8">
         <h4 className="text-sm font-semibold text-foreground">
           {table.label}
           <span className="ml-1 font-normal text-muted-foreground">/ {table.labelId}</span>
+          {isTableRequired(table.key) ? (
+            <span className="ml-1 text-destructive" aria-hidden="true">
+              *
+            </span>
+          ) : (
+            <span className="ml-1 font-normal text-muted-foreground/60">(opsional)</span>
+          )}
         </h4>
+        {tableError ? <p className="mt-1 text-xs font-medium text-destructive">{tableError}</p> : null}
         <div className="mt-3 overflow-x-auto rounded-md border border-border">
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead className="bg-muted/60">

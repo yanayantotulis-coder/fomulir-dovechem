@@ -547,3 +547,85 @@ export const DOC_TYPES = [
 ];
 
 export const REQUIRED_DOC_TYPES = DOC_TYPES.filter((type) => type.required);
+
+/** Field yang boleh dikosongkan (sisanya wajib diisi). */
+const OPTIONAL_FIELDS = new Set([
+  "personal.simA",
+  "personal.simB",
+  "personal.simC",
+  "personal.npwp",
+  "others.relocate",
+  "others.businessTrip",
+  "others.relocateNotes",
+  "others.businessTripNotes",
+]);
+
+/** Baris tabel yang wajib lengkap. Tabel yang tidak terdaftar bersifat opsional. */
+const TABLE_RULES: Record<string, { rows: number; columns?: string[] }> = {
+  formal: { rows: 1, columns: ["level", "school", "major", "from", "until"] },
+  languages: { rows: 1, columns: ["language", "spoken", "written"] },
+  refs: { rows: 1 },
+  emergency: { rows: 1 },
+  salary: { rows: 1, columns: ["component", "current", "expectation"] },
+};
+
+function isEmptyValue(value: unknown): boolean {
+  if (typeof value === "boolean") return false;
+  return String(value ?? "").trim().length === 0;
+}
+
+export type SectionErrors = {
+  fields: Record<string, string>;
+  tables: Record<string, string>;
+};
+
+export function validateSection(section: Section, data: ApplicationData): SectionErrors {
+  const values = (data[section.id] ?? {}) as Record<string, unknown>;
+  const fields: Record<string, string> = {};
+  const tables: Record<string, string> = {};
+
+  for (const field of section.fields ?? []) {
+    if (OPTIONAL_FIELDS.has(`${section.id}.${field.key}`)) continue;
+    const value = values[field.key];
+    if (field.type === "checkbox") {
+      if (value !== true) fields[field.key] = "Wajib dicentang";
+      continue;
+    }
+    if (isEmptyValue(value)) fields[field.key] = "Wajib diisi";
+  }
+
+  for (const table of section.tables ?? []) {
+    const rule = TABLE_RULES[table.key];
+    if (!rule) continue;
+    const rows = (Array.isArray(values[table.key]) ? values[table.key] : []) as Record<
+      string,
+      unknown
+    >[];
+    const cols = rule.columns ?? table.columns.map((c) => c.key);
+    for (let i = 0; i < rule.rows; i += 1) {
+      const row = rows[i] ?? {};
+      if (cols.some((col) => isEmptyValue(row[col]))) {
+        tables[table.key] =
+          rule.rows > 1
+            ? `Lengkapi ${rule.rows} baris pertama pada tabel ini`
+            : "Lengkapi baris pertama pada tabel ini";
+        break;
+      }
+    }
+  }
+
+  return { fields, tables };
+}
+
+export function isSectionComplete(section: Section, data: ApplicationData): boolean {
+  const errors = validateSection(section, data);
+  return Object.keys(errors.fields).length === 0 && Object.keys(errors.tables).length === 0;
+}
+
+export function isFieldRequired(sectionId: string, fieldKey: string): boolean {
+  return !OPTIONAL_FIELDS.has(`${sectionId}.${fieldKey}`);
+}
+
+export function isTableRequired(tableKey: string): boolean {
+  return tableKey in TABLE_RULES;
+}

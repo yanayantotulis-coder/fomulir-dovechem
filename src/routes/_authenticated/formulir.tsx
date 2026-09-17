@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { FormSection } from "@/components/form-section";
 import { Button } from "@/components/ui/button";
-import { FORM_SECTIONS, REQUIRED_DOC_TYPES, type ApplicationData } from "@/lib/form-schema";
+import {
+  FORM_SECTIONS,
+  REQUIRED_DOC_TYPES,
+  isSectionComplete,
+  validateSection,
+  type ApplicationData,
+} from "@/lib/form-schema";
 import {
   fetchDocuments,
   fetchMyRoles,
@@ -65,10 +71,21 @@ function FormPage() {
     if (appQuery.data && !data) setData(appQuery.data.data);
   }, [appQuery.data, data]);
 
+  const [showErrors, setShowErrors] = useState(false);
+
   const save = useMutation({
     mutationFn: async (status?: "draft" | "submitted") => {
       if (!appQuery.data || !data) return;
       if (status === "submitted") {
+        const incomplete = FORM_SECTIONS.filter((s) => !isSectionComplete(s, data));
+        if (incomplete.length > 0) {
+          const first = FORM_SECTIONS.findIndex((s) => s.id === incomplete[0]!.id);
+          setActive(first);
+          setShowErrors(true);
+          throw new Error(
+            `Lengkapi bagian: ${incomplete.map((s) => `${s.no}. ${s.titleId}`).join(", ")}`,
+          );
+        }
         const uploadedTypes = new Set((docsQuery.data ?? []).map((doc) => doc.doc_type));
         const missing = REQUIRED_DOC_TYPES.filter((type) => !uploadedTypes.has(type.key));
         if (missing.length > 0) {
@@ -92,6 +109,24 @@ function FormPage() {
 
   const isStaff = (rolesQuery.data ?? []).some((r) => r === "hr" || r === "admin");
   const section = FORM_SECTIONS[active];
+
+  const completed = data
+    ? FORM_SECTIONS.map((s) => isSectionComplete(s, data))
+    : FORM_SECTIONS.map(() => false);
+  const firstIncomplete = completed.findIndex((ok) => !ok);
+  const maxUnlocked = firstIncomplete === -1 ? FORM_SECTIONS.length - 1 : firstIncomplete;
+  const currentComplete = completed[active] === true;
+  const errors = data && section && showErrors ? validateSection(section, data) : undefined;
+
+  const goNext = () => {
+    if (!currentComplete) {
+      setShowErrors(true);
+      toast.error("Lengkapi semua isian wajib di bagian ini sebelum lanjut");
+      return;
+    }
+    setShowErrors(false);
+    setActive((i) => Math.min(FORM_SECTIONS.length - 1, i + 1));
+  };
 
   if (appQuery.isLoading || !data || !section) {
     return (
@@ -124,15 +159,26 @@ function FormPage() {
             key={s.id}
             size="sm"
             variant={i === active ? "default" : "outline"}
-            onClick={() => setActive(i)}
+            disabled={i > maxUnlocked}
+            title={i > maxUnlocked ? "Lengkapi bagian sebelumnya terlebih dahulu" : undefined}
+            onClick={() => {
+              setShowErrors(false);
+              setActive(i);
+            }}
           >
             {s.no}. {s.title}
+            {completed[i] ? " ✓" : ""}
           </Button>
         ))}
       </div>
 
+      <p className="mt-3 text-xs text-muted-foreground">
+        Semua isian bertanda <span className="text-destructive">*</span> wajib diisi. Bagian
+        berikutnya terbuka setelah bagian ini lengkap.
+      </p>
+
       <div className="mt-6">
-        <FormSection section={section} data={data} onChange={onChange} />
+        <FormSection section={section} data={data} onChange={onChange} errors={errors} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
@@ -140,15 +186,14 @@ function FormPage() {
           <Button
             variant="outline"
             disabled={active === 0}
-            onClick={() => setActive((i) => Math.max(0, i - 1))}
+            onClick={() => {
+              setShowErrors(false);
+              setActive((i) => Math.max(0, i - 1));
+            }}
           >
             Sebelumnya
           </Button>
-          <Button
-            variant="outline"
-            disabled={active === FORM_SECTIONS.length - 1}
-            onClick={() => setActive((i) => Math.min(FORM_SECTIONS.length - 1, i + 1))}
-          >
+          <Button variant="outline" disabled={active === FORM_SECTIONS.length - 1} onClick={goNext}>
             Selanjutnya
           </Button>
         </div>
