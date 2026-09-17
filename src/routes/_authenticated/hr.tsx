@@ -188,8 +188,8 @@ function HrPage() {
             ) : null}
             {rows.map((r) => {
               const docs = docsByApp.get(r.id) ?? [];
-              const requiredDone = REQUIRED_DOC_TYPES.filter((key) =>
-                docs.some((d) => d.doc_type === key),
+              const requiredDone = REQUIRED_DOC_TYPES.filter((t) =>
+                docs.some((d) => d.doc_type === t.key),
               ).length;
               const candidateName = r.full_name || r.email || "Kandidat";
               return (
