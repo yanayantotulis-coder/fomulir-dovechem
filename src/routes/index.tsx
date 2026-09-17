@@ -279,6 +279,79 @@ function Landing() {
         </div>
       </section>
 
+      {/* Daftar 10 bagian formulir */}
+      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+          Isi formulir lengkap
+        </p>
+        <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
+          10 bagian yang akan Anda isi
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+          Urutan dan pertanyaannya sama dengan formulir lamaran resmi PT. Dover Chemical, dalam
+          dua bahasa (Indonesia dan Inggris).
+        </p>
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {sections.map((s) => (
+            <div
+              key={s.no}
+              className="flex items-start gap-3 rounded-lg border border-border bg-card p-4"
+            >
+              <span className="mt-0.5 flex h-7 w-9 shrink-0 items-center justify-center rounded bg-primary text-[11px] font-bold text-primary-foreground">
+                {s.no}
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{s.id}</p>
+                <p className="text-xs text-muted-foreground">{s.en}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Dokumen yang disiapkan */}
+      <section className="border-y border-border bg-card">
+        <div className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+            Sebelum mulai
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
+            Dokumen yang perlu disiapkan
+          </h2>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {documents.map((d) => (
+              <div key={d.title} className="rounded-lg border border-border bg-background p-6">
+                <FolderOpen className="h-6 w-6 text-accent" aria-hidden />
+                <h3 className="mt-4 text-base font-semibold text-foreground">{d.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{d.text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">
+            Ukuran berkas maksimal 5 MB per dokumen. Dokumen dapat diganti kapan saja selama
+            proses seleksi berjalan.
+          </p>
+        </div>
+      </section>
+
+      {/* Tahapan seleksi */}
+      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+          Setelah formulir dikirim
+        </p>
+        <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">Tahapan seleksi</h2>
+        <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stages.map((s, i) => (
+            <li key={s.title} className="rounded-lg border border-border bg-card p-6 shadow-panel">
+              <span className="text-2xl font-bold text-accent">{i + 1}</span>
+              <h3 className="mt-2 text-base font-semibold text-foreground">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+
       {/* Keunggulan */}
       <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
         <h2 className="text-2xl font-bold text-foreground md:text-3xl">
