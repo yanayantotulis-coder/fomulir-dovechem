@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -12,21 +12,28 @@ import {
   saveApplication,
   type ApplicationRecord,
 } from "@/lib/candidate-api";
-import { downloadDocx, downloadPdf, downloadXlsx } from "@/lib/exporters";
 
 export const Route = createFileRoute("/_authenticated/formulir")({
+  beforeLoad: async () => {
+    const roles = await fetchMyRoles();
+    if (roles.some((role) => role === "admin" || role === "hr")) {
+      throw redirect({ to: "/admin" });
+    }
+  },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Formulir Lamaran — PT. Dover Chemical" },
       {
         name: "description",
         content:
-          "Isi formulir lamaran PT. Dover Chemical bagian demi bagian, simpan sebagai draf, lalu unduh dalam PDF, Word, atau Excel.",
+          "Isi formulir lamaran PT. Dover Chemical, simpan draf, lalu kirim ke HR.",
       },
       { property: "og:title", content: "Formulir Lamaran — PT. Dover Chemical" },
       {
         property: "og:description",
-        content: "Formulir lamaran online lengkap dengan penyimpanan draf dan unduhan.",
+        content: "Formulir lamaran online dengan penyimpanan draf dan pengiriman ke HR.",
       },
     ],
   }),
@@ -84,17 +91,6 @@ function FormPage() {
           <p className="text-sm text-muted-foreground">
             Job Application Form 2026 — isian tersimpan per bagian.
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => downloadPdf(data)}>
-            Unduh PDF
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => downloadDocx(data)}>
-            Unduh Word
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => downloadXlsx(data)}>
-            Unduh Excel
-          </Button>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -22,21 +22,28 @@ import {
   type ApplicationRecord,
   type DocumentRecord,
 } from "@/lib/candidate-api";
-import { downloadDocx, downloadPdf, downloadXlsx } from "@/lib/exporters";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  beforeLoad: async () => {
+    const roles = await fetchMyRoles();
+    if (roles.some((role) => role === "admin" || role === "hr")) {
+      throw redirect({ to: "/admin" });
+    }
+  },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Dashboard Kandidat — PT. Dover Chemical" },
       {
         name: "description",
         content:
-          "Pantau status lamaran, unggah foto dan dokumen pendukung, serta unduh formulir lamaran Anda.",
+          "Isi formulir lamaran dan unggah foto serta dokumen pendukung Anda.",
       },
       { property: "og:title", content: "Dashboard Kandidat — PT. Dover Chemical" },
       {
         property: "og:description",
-        content: "Status lamaran, dokumen pendukung, dan unduhan formulir kandidat.",
+        content: "Pengisian formulir dan unggah dokumen kandidat.",
       },
     ],
   }),
@@ -68,12 +75,18 @@ function Dashboard() {
   });
   const docsQuery = useQuery<DocumentRecord[]>({
     queryKey: ["my-documents", appQuery.data?.id],
-    queryFn: () => fetchDocuments(appQuery.data!.id),
+    queryFn: () => {
+      if (!appQuery.data) throw new Error("Lamaran belum tersedia");
+      return fetchDocuments(appQuery.data.id);
+    },
     enabled: Boolean(appQuery.data?.id),
   });
 
   const upload = useMutation({
-    mutationFn: async (file: File) => uploadDocument(appQuery.data!.id, docType, file),
+    mutationFn: async (file: File) => {
+      if (!appQuery.data) throw new Error("Lamaran belum tersedia");
+      return uploadDocument(appQuery.data.id, docType, file);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-documents"] });
       toast.success("Dokumen terunggah");
@@ -97,7 +110,7 @@ function Dashboard() {
     <AppShell isStaff={isStaff}>
       <h1 className="font-display text-2xl font-bold text-foreground">Dashboard Kandidat</h1>
       <p className="text-sm text-muted-foreground">
-        Ringkasan lamaran, dokumen pendukung, dan unduhan formulir Anda.
+        Formulir lamaran dan berkas dokumen Anda.
       </p>
 
       {!app ? (
@@ -136,15 +149,6 @@ function Dashboard() {
           <div className="mt-6 flex flex-wrap gap-2">
             <Button asChild>
               <Link to="/formulir">Lanjut isi formulir</Link>
-            </Button>
-            <Button variant="outline" onClick={() => downloadPdf(app.data)}>
-              Unduh PDF
-            </Button>
-            <Button variant="outline" onClick={() => downloadDocx(app.data)}>
-              Unduh Word
-            </Button>
-            <Button variant="outline" onClick={() => downloadXlsx(app.data)}>
-              Unduh Excel
             </Button>
           </div>
 
