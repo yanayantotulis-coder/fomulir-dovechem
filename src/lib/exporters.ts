@@ -25,21 +25,32 @@ export async function downloadPdf(data: ApplicationData) {
       buildDocxBytes(data),
     ]);
 
-  const host = document.createElement("div");
-  host.setAttribute("aria-hidden", "true");
-  Object.assign(host.style, {
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.title = "Pembuatan PDF formulir";
+  Object.assign(frame.style, {
     position: "fixed",
     left: "-100000px",
     top: "0",
-    width: "fit-content",
-    color: "rgb(0, 0, 0)",
-    backgroundColor: "rgb(255, 255, 255)",
+    width: "900px",
+    height: "1200px",
+    border: "0",
     zIndex: "-1",
   });
-  document.body.appendChild(host);
+  document.body.appendChild(frame);
 
   try {
-    await renderAsync(docxBytes, host, host, {
+    const frameDocument = frame.contentDocument;
+    if (!frameDocument) throw new Error("Area pembuatan PDF tidak tersedia.");
+    frameDocument.open();
+    frameDocument.write("<!doctype html><html><head></head><body></body></html>");
+    frameDocument.close();
+    const host = frameDocument.body;
+    host.style.margin = "0";
+    host.style.color = "rgb(0, 0, 0)";
+    host.style.backgroundColor = "rgb(255, 255, 255)";
+
+    await renderAsync(docxBytes, host, frameDocument.head, {
       className: "docx-pdf",
       inWrapper: true,
       breakPages: true,
@@ -106,7 +117,7 @@ export async function downloadPdf(data: ApplicationData) {
 
     pdf.save(`${fileBaseName(data)}.pdf`);
   } finally {
-    host.remove();
+    frame.remove();
   }
 }
 
