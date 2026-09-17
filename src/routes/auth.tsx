@@ -229,7 +229,7 @@ function AuthPage() {
           </Button>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            Anda bagian dari tim HR/admin?{" "}
+            Anda bagian dari tim HC/admin?{" "}
             <Link to="/auth-admin" className="font-medium text-primary underline">
               Masuk lewat portal admin
             </Link>

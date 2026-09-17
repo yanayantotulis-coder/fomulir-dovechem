@@ -124,7 +124,7 @@ function Dashboard() {
             <div className="rounded-lg border border-border bg-card p-5 shadow-panel">
               <p className="label-form">Status</p>
               <p className="mt-1 text-lg font-semibold text-foreground">
-                {app.status === "submitted" ? "Sudah dikirim ke HR" : "Draf"}
+                {app.status === "submitted" ? "Sudah dikirim ke HC" : "Draf"}
               </p>
               <p className="text-sm text-muted-foreground">
                 Diperbarui {new Date(app.updated_at).toLocaleString("id-ID")}
@@ -152,7 +152,7 @@ function Dashboard() {
                   <p className="text-xs font-semibold uppercase text-muted-foreground">Langkah 1</p>
                   <h2 className="mt-1 text-lg font-semibold text-foreground">Isi Formulir Lamaran</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Lengkapi seluruh data diri dan simpan sebelum dikirim ke HR.
+                    Lengkapi seluruh data diri dan simpan sebelum dikirim ke HC.
                   </p>
                 </div>
               </div>

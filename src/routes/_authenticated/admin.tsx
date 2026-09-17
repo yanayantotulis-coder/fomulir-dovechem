@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
       {
         name: "description",
         content:
-          "Dashboard admin PT. Dover Chemical: data akun login kandidat, dengan formulir dan dokumen kandidat tergabung di Bank Data HR.",
+          "Dashboard admin PT. Dover Chemical: data akun login kandidat, dengan formulir dan dokumen kandidat tergabung di Bank Data HC.",
       },
       { property: "og:title", content: "Dashboard Admin — PT. Dover Chemical" },
       {
@@ -66,7 +66,7 @@ function AdminPage() {
       <AppShell>
         <h1 className="font-display text-2xl font-bold text-foreground">Akses terbatas</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Halaman ini hanya untuk admin. Hubungi tim HR jika Anda seharusnya memiliki akses.
+          Halaman ini hanya untuk admin. Hubungi tim HC jika Anda seharusnya memiliki akses.
         </p>
       </AppShell>
     );
@@ -79,11 +79,11 @@ function AdminPage() {
           <h1 className="font-admin-display text-2xl font-bold text-foreground">Dashboard Admin</h1>
           <p className="font-admin text-sm text-muted-foreground">
             Data akun login kandidat. Formulir lamaran dan berkas dokumen kini tergabung di Bank
-            Data HR.
+            Data HC.
           </p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/hr">Buka Bank Data HR</Link>
+          <Link to="/hr">Buka Bank Data HC</Link>
         </Button>
       </div>
       <StaffToolbar />

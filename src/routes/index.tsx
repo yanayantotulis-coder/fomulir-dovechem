@@ -72,12 +72,12 @@ const highlights = [
   {
     icon: Database,
     title: "Bank data kandidat",
-    text: "Data Anda tersimpan rapi dan bisa diperbarui kapan saja. Tim HR dapat menelusuri seluruh kandidat dari satu tempat.",
+    text: "Data Anda tersimpan rapi dan bisa diperbarui kapan saja. Tim HC dapat menelusuri seluruh kandidat dari satu tempat.",
   },
   {
     icon: ShieldCheck,
     title: "Privasi terjaga",
-    text: "Data hanya dapat diakses oleh Anda sebagai pemilik akun dan tim HR PT. Dover Chemical.",
+    text: "Data hanya dapat diakses oleh Anda sebagai pemilik akun dan tim HC PT. Dover Chemical.",
   },
 ];
 
@@ -111,8 +111,8 @@ const documents = [
 ];
 
 const stages = [
-  { title: "Seleksi administrasi", text: "Tim HR memeriksa kelengkapan formulir dan dokumen Anda." },
-  { title: "Wawancara HR", text: "Pembahasan riwayat kerja, motivasi, dan ekspektasi remunerasi." },
+  { title: "Seleksi administrasi", text: "Tim HC memeriksa kelengkapan formulir dan dokumen Anda." },
+  { title: "Wawancara HC", text: "Pembahasan riwayat kerja, motivasi, dan ekspektasi remunerasi." },
   { title: "Wawancara user", text: "Diskusi teknis bersama calon atasan langsung di departemen." },
   { title: "Penawaran kerja", text: "Kandidat terpilih menerima penawaran resmi dari perusahaan." },
 ];
@@ -124,7 +124,7 @@ const faqs = [
   },
   {
     q: "Bagaimana kalau saya perlu memperbaiki isian setelah terkirim?",
-    a: "Buka kembali formulir dari akun Anda, perbaiki bagian yang salah, lalu kirim ulang ke HR.",
+    a: "Buka kembali formulir dari akun Anda, perbaiki bagian yang salah, lalu kirim ulang ke HC.",
   },
   {
     q: "Apakah tanda tangan bisa dilakukan online?",
@@ -132,7 +132,7 @@ const faqs = [
   },
   {
     q: "Siapa yang bisa melihat data saya?",
-    a: "Hanya Anda sebagai pemilik akun dan tim HR PT. Dover Chemical. Kandidat lain tidak dapat melihat data Anda.",
+    a: "Hanya Anda sebagai pemilik akun dan tim HC PT. Dover Chemical. Kandidat lain tidak dapat melihat data Anda.",
   },
   {
     q: "Apakah ada biaya dalam proses rekrutmen?",

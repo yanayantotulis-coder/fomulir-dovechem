@@ -36,12 +36,12 @@ export const Route = createFileRoute("/_authenticated/formulir")({
       {
         name: "description",
         content:
-          "Isi formulir lamaran PT. Dover Chemical, simpan draf, lalu kirim ke HR.",
+          "Isi formulir lamaran PT. Dover Chemical, simpan draf, lalu kirim ke HC.",
       },
       { property: "og:title", content: "Formulir Lamaran — PT. Dover Chemical" },
       {
         property: "og:description",
-        content: "Formulir lamaran online dengan penyimpanan draf dan pengiriman ke HR.",
+        content: "Formulir lamaran online dengan penyimpanan draf dan pengiriman ke HC.",
       },
     ],
   }),
@@ -96,7 +96,7 @@ function FormPage() {
     },
     onSuccess: (_r, status) => {
       queryClient.invalidateQueries({ queryKey: ["my-application"] });
-      toast.success(status === "submitted" ? "Formulir dikirim ke HR" : "Draf tersimpan");
+      toast.success(status === "submitted" ? "Formulir dikirim ke HC" : "Draf tersimpan");
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Gagal menyimpan, coba lagi"),
@@ -202,7 +202,7 @@ function FormPage() {
             Simpan draf
           </Button>
           <Button disabled={save.isPending || docsQuery.isLoading} onClick={() => save.mutate("submitted")}>
-            Kirim ke HR
+            Kirim ke HC
           </Button>
         </div>
       </div>

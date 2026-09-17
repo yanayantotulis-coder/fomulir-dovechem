@@ -17,7 +17,7 @@ export const Route = createFileRoute("/auth-admin")({
       {
         name: "description",
         content:
-          "Login khusus tim HR dan admin PT. Dover Chemical untuk membuka dashboard data kandidat dan dokumen.",
+          "Login khusus tim HC dan admin PT. Dover Chemical untuk membuka dashboard data kandidat dan dokumen.",
       },
       { property: "og:title", content: "Masuk Admin — PT. Dover Chemical" },
       {
@@ -86,7 +86,7 @@ function AdminAuthPage() {
         <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-panel">
           <h1 className="text-2xl font-bold text-foreground">Masuk Admin</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Khusus tim HR dan admin PT. Dover Chemical.
+            Khusus tim HC dan admin PT. Dover Chemical.
           </p>
 
           <form
@@ -123,7 +123,7 @@ function AdminAuthPage() {
           </form>
 
           <p className="mt-4 text-xs text-muted-foreground">
-            Akun admin dibuat oleh HR. Jika belum punya akses, hubungi tim HR.
+            Akun admin dibuat oleh HC. Jika belum punya akses, hubungi tim HC.
           </p>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">

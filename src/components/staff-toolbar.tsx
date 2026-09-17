@@ -3,7 +3,7 @@ import { Archive, LayoutDashboard } from "lucide-react";
 
 const staffLinks = [
   { to: "/admin" as const, label: "Dashboard Admin", icon: LayoutDashboard },
-  { to: "/hr" as const, label: "Bank Data HR", icon: Archive },
+  { to: "/hr" as const, label: "Bank Data HC", icon: Archive },
 ];
 
 export function StaffToolbar() {

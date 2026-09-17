@@ -46,13 +46,13 @@ import { DOC_TYPES, REQUIRED_DOC_TYPES } from "@/lib/form-schema";
 export const Route = createFileRoute("/_authenticated/hr")({
   head: () => ({
     meta: [
-      { title: "Bank Data HR — PT. Dover Chemical" },
+      { title: "Bank Data HC — PT. Dover Chemical" },
       {
         name: "description",
         content:
-          "Bank data HR PT. Dover Chemical: formulir lamaran dan berkas dokumen setiap kandidat dalam satu halaman, siap diunduh sebagai satu berkas.",
+          "Bank data HC PT. Dover Chemical: formulir lamaran dan berkas dokumen setiap kandidat dalam satu halaman, siap diunduh sebagai satu berkas.",
       },
-      { property: "og:title", content: "Bank Data HR — PT. Dover Chemical" },
+      { property: "og:title", content: "Bank Data HC — PT. Dover Chemical" },
       {
         property: "og:description",
         content: "Formulir lamaran dan dokumen kandidat digabung dalam satu bank data.",
@@ -167,7 +167,7 @@ function HrPage() {
       <AppShell>
         <h1 className="font-display text-2xl font-bold text-foreground">Akses terbatas</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Halaman ini hanya untuk tim HR. Hubungi HR jika Anda seharusnya memiliki akses.
+          Halaman ini hanya untuk tim HC. Hubungi HC jika Anda seharusnya memiliki akses.
         </p>
       </AppShell>
     );
@@ -177,7 +177,7 @@ function HrPage() {
     <AppShell isStaff>
       <div className="flex flex-wrap items-end justify-between gap-4 font-admin">
         <div className="border-l-4 border-admin-accent pl-4">
-          <h1 className="font-admin-display text-2xl font-bold text-foreground">Bank Data HR</h1>
+          <h1 className="font-admin-display text-2xl font-bold text-foreground">Bank Data HC</h1>
           <p className="font-admin text-sm text-muted-foreground">
             {rows.length} kandidat · {totalDocs} dokumen. Formulir lamaran dan berkas dokumen
             digabung dalam satu daftar.
