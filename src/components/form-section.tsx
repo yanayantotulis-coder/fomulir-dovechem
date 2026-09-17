@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
+import { SignaturePad } from "@/components/signature-pad";
 
 type Row = Record<string, unknown>;
 
@@ -60,6 +61,11 @@ export function FormSection({ section, data, onChange }: Props) {
                 ))}
               </SelectContent>
             </Select>
+          ) : field.type === "signature" ? (
+            <SignaturePad
+              value={String(value ?? "")}
+              onChange={(v) => onChange(section.id, field.key, v)}
+            />
           ) : field.type === "checkbox" ? (
             <div className="flex h-9 items-center">
               <Checkbox

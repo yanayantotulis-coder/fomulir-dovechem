@@ -458,6 +458,13 @@ export const FORM_SECTIONS: Section[] = [
         labelId: "Saya menyatakan seluruh data di atas benar dan dapat dipertanggungjawabkan",
         type: "checkbox",
       },
+      {
+        key: "signature",
+        label: "Signature",
+        labelId: "Tanda Tangan Kandidat",
+        type: "signature",
+        full: true,
+      },
     ],
   },
 ];
