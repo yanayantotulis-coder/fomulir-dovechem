@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
@@ -72,6 +72,46 @@ function FormPage() {
   }, [appQuery.data, data]);
 
   const [showErrors, setShowErrors] = useState(false);
+  const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
+  const [autoSaving, setAutoSaving] = useState(false);
+  const lastSavedRef = useRef<string | null>(null);
+  const appId = appQuery.data?.id;
+  const stepKey = appId ? `dover-form-step:${appId}` : null;
+
+  // Ingat bagian aktif terakhir agar tidak balik ke awal setelah refresh.
+  useEffect(() => {
+    if (!stepKey) return;
+    const saved = Number(window.localStorage.getItem(stepKey));
+    if (Number.isInteger(saved) && saved >= 0 && saved < FORM_SECTIONS.length) setActive(saved);
+  }, [stepKey]);
+
+  useEffect(() => {
+    if (stepKey) window.localStorage.setItem(stepKey, String(active));
+  }, [stepKey, active]);
+
+  // Simpan otomatis draf ke server agar isian tidak hilang saat refresh.
+  useEffect(() => {
+    if (!appId || !data) return;
+    const snapshot = JSON.stringify(data);
+    if (lastSavedRef.current === null) {
+      lastSavedRef.current = snapshot;
+      return;
+    }
+    if (lastSavedRef.current === snapshot) return;
+    const timer = window.setTimeout(async () => {
+      setAutoSaving(true);
+      try {
+        await saveApplication(appId, data);
+        lastSavedRef.current = snapshot;
+        setAutoSavedAt(new Date());
+      } catch {
+        // biarkan percobaan berikutnya menyimpan ulang
+      } finally {
+        setAutoSaving(false);
+      }
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [appId, data]);
 
   const save = useMutation({
     mutationFn: async (status?: "draft" | "submitted") => {
