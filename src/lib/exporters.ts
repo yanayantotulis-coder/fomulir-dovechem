@@ -17,74 +17,124 @@ export function fileBaseName(data: ApplicationData) {
  * jadi susunan halaman PDF mengikuti formulir Word (tinggal konversi).
  */
 export async function downloadPdf(data: ApplicationData) {
-  const [{ default: JsPDF }, { default: autoTable }, { docxToBlocks }, docxBytes] =
+  const [{ default: JsPDF }, { default: html2canvas }, { renderAsync }, docxBytes] =
     await Promise.all([
       import("jspdf"),
-      import("jspdf-autotable"),
-      import("./docx-render"),
+      import("html2canvas"),
+      import("docx-preview"),
       buildDocxBytes(data),
     ]);
-  const blocks = await docxToBlocks(docxBytes);
-  const doc = new JsPDF({ unit: "pt", format: "a4" });
-  const marginX = 36;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const usable = pageWidth - marginX * 2;
-  let cursor = 48;
-  const signature = asText((data["declaration"] ?? {})["signature"]);
 
-  const ensureSpace = (needed: number) => {
-    if (cursor + needed <= pageHeight - 40) return;
-    doc.addPage();
-    cursor = 48;
-  };
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.title = "Pembuatan PDF formulir";
+  Object.assign(frame.style, {
+    position: "fixed",
+    left: "-100000px",
+    top: "0",
+    width: "900px",
+    height: "1200px",
+    border: "0",
+    zIndex: "-1",
+  });
+  document.body.appendChild(frame);
 
-  let signaturePlaced = false;
-  for (const block of blocks) {
-    if (block.type === "paragraph") {
-      doc.setFontSize(block.bold ? 10 : 9);
-      doc.setFont("helvetica", block.bold ? "bold" : "normal");
-      const lines = doc.splitTextToSize(block.text, usable) as string[];
-      ensureSpace(lines.length * 12 + 6);
-      const x = block.align === "center" ? pageWidth / 2 : block.align === "right" ? pageWidth - marginX : marginX;
-      doc.text(lines, x, cursor, { align: block.align });
-      cursor += lines.length * 12 + 4;
-      continue;
-    }
-    if (block.type === "image") {
-      if (!signature.startsWith("data:image/png;base64,")) continue;
-      ensureSpace(80);
-      try {
-        doc.addImage(signature, "PNG", marginX, cursor, 170, 62);
-        cursor += 70;
-        signaturePlaced = true;
-      } catch {
-        signaturePlaced = true;
-      }
-      continue;
+  try {
+    const frameDocument = frame.contentDocument;
+    if (!frameDocument) throw new Error("Area pembuatan PDF tidak tersedia.");
+    frameDocument.open();
+    frameDocument.write("<!doctype html><html><head></head><body></body></html>");
+    frameDocument.close();
+    const host = frameDocument.body;
+    host.style.margin = "0";
+    host.style.color = "rgb(0, 0, 0)";
+    host.style.backgroundColor = "rgb(255, 255, 255)";
 
-    }
-    autoTable(doc, {
-      startY: cursor,
-      body: block.rows,
-      theme: "grid",
-      styles: { fontSize: 7.5, cellPadding: 3, overflow: "linebreak", valign: "top" },
-      margin: { left: marginX, right: marginX },
-      tableWidth: usable,
+    await renderAsync(docxBytes, host, frameDocument.head, {
+      className: "docx-pdf",
+      inWrapper: true,
+      breakPages: true,
+      ignoreLastRenderedPageBreak: false,
+      renderHeaders: true,
+      renderFooters: true,
+      renderFootnotes: true,
+      useBase64URL: true,
     });
-    cursor = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-  }
 
-  if (!signaturePlaced && signature.startsWith("data:image/png;base64,")) {
-    ensureSpace(100);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text("Tanda Tangan Kandidat / Signature", marginX, cursor + 12);
-    doc.addImage(signature, "PNG", marginX, cursor + 18, 170, 62);
-    doc.text(`( ${asText((data["declaration"] ?? {})["signatureName"])} )`, marginX, cursor + 94);
-  }
+    await document.fonts?.ready;
+    const images = Array.from(host.querySelectorAll("img"));
+    await Promise.all(
+      images.map((image) =>
+        image.complete
+          ? Promise.resolve()
+          : new Promise<void>((resolve) => {
+              const timeout = window.setTimeout(resolve, 5000);
+              const finish = () => {
+                window.clearTimeout(timeout);
+                resolve();
+              };
+              image.addEventListener("load", finish, { once: true });
+              image.addEventListener("error", finish, { once: true });
+            }),
+      ),
+    );
 
-  doc.save(`${fileBaseName(data)}.pdf`);
+    const pages = Array.from(host.querySelectorAll<HTMLElement>("section.docx-pdf"));
+    if (!pages.length) throw new Error("Halaman template Word tidak dapat dirender.");
+
+    const pdf = new JsPDF({ unit: "pt", format: "a4", compress: true });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    let pdfPageIndex = 0;
+    for (const page of pages) {
+      if (!page) continue;
+      const canvas = await html2canvas(page, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false,
+      });
+      const sliceHeight = Math.max(1, Math.round(canvas.width * (pdfHeight / pdfWidth)));
+      for (let sourceY = 0; sourceY < canvas.height; sourceY += sliceHeight) {
+        const currentHeight = Math.min(sliceHeight, canvas.height - sourceY);
+        const slice = document.createElement("canvas");
+        slice.width = canvas.width;
+        slice.height = sliceHeight;
+        const context = slice.getContext("2d");
+        if (!context) throw new Error("Halaman PDF tidak dapat digambar.");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, slice.width, slice.height);
+        context.drawImage(
+          canvas,
+          0,
+          sourceY,
+          canvas.width,
+          currentHeight,
+          0,
+          0,
+          canvas.width,
+          currentHeight,
+        );
+        if (pdfPageIndex > 0) pdf.addPage("a4", "portrait");
+        pdf.addImage(
+          slice.toDataURL("image/jpeg", 0.94),
+          "JPEG",
+          0,
+          0,
+          pdfWidth,
+          pdfHeight,
+          undefined,
+          "FAST",
+        );
+        pdfPageIndex += 1;
+      }
+    }
+
+    pdf.save(`${fileBaseName(data)}.pdf`);
+  } finally {
+    frame.remove();
+  }
 }
 
 
