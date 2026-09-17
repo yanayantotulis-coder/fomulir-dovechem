@@ -1,4 +1,11 @@
-export type FieldType = "text" | "date" | "textarea" | "select" | "email" | "checkbox";
+export type FieldType =
+  | "text"
+  | "date"
+  | "textarea"
+  | "select"
+  | "email"
+  | "checkbox"
+  | "signature";
 
 export type Field = {
   key: string;
@@ -450,6 +457,13 @@ export const FORM_SECTIONS: Section[] = [
         label: "I declare that all information given herein is true and correct",
         labelId: "Saya menyatakan seluruh data di atas benar dan dapat dipertanggungjawabkan",
         type: "checkbox",
+      },
+      {
+        key: "signature",
+        label: "Signature",
+        labelId: "Tanda Tangan Kandidat",
+        type: "signature",
+        full: true,
       },
     ],
   },

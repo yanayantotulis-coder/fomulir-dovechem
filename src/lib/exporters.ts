@@ -13,10 +13,9 @@ type TablePart = { title: string; head: string[]; body: string[][] };
 
 function sectionParts(section: Section, data: ApplicationData) {
   const sectionData = data[section.id] ?? {};
-  const fieldRows: string[][] = (section.fields ?? []).map((f) => [
-    `${f.labelId} / ${f.label}`,
-    asText(sectionData[f.key]),
-  ]);
+  const fieldRows: string[][] = (section.fields ?? [])
+    .filter((f) => f.type !== "signature")
+    .map((f) => [`${f.labelId} / ${f.label}`, asText(sectionData[f.key])]);
   const tables: TablePart[] = (section.tables ?? []).map((t) => {
     const rows = Array.isArray(sectionData[t.key])
       ? (sectionData[t.key] as Record<string, unknown>[])
@@ -86,7 +85,49 @@ export async function downloadPdf(data: ApplicationData) {
       cursor = 48;
     }
   }
+
+  const signature = asText((data["declaration"] ?? {})["signature"]);
+  if (signature.startsWith("data:image/png;base64,")) {
+    if (cursor > 640) {
+      doc.addPage();
+      cursor = 48;
+    }
+    doc.setFontSize(9);
+    doc.text("Tanda Tangan Kandidat / Signature", marginX, cursor + 12);
+    doc.addImage(signature, "PNG", marginX, cursor + 18, 170, 62);
+    doc.text(
+      `( ${asText((data["declaration"] ?? {})["signatureName"])} )`,
+      marginX,
+      cursor + 94,
+    );
+  }
   doc.save(`${fileBaseName(data)}.pdf`);
+}
+
+const SIGNATURE_REL_ID = "rIdTandaTangan";
+
+function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function signatureDrawingXml(): string {
+  const cx = 1828800;
+  const cy = 731520;
+  return (
+    `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">` +
+    `<wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="1001" name="TandaTangan"/>` +
+    `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+    `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+    `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+    `<pic:nvPicPr><pic:cNvPr id="1001" name="TandaTangan"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    `<pic:blipFill><a:blip r:embed="${SIGNATURE_REL_ID}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>` +
+    `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>` +
+    `</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`
+  );
 }
 
 const escapeXml = (value: string) =>
@@ -137,7 +178,27 @@ export async function downloadDocx(data: ApplicationData) {
   const docPath = "word/document.xml";
   const extras = nonFormalText(data);
 
-  const xml = strFromU8(files[docPath]!).replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
+  let source = strFromU8(files[docPath]!);
+  const signature = asText((data["declaration"] ?? {})["signature"]);
+  const signatureRun =
+    /<w:r>(?:(?!<w:r>)[\s\S])*?\{\{declaration\.signature\}\}<\/w:t><\/w:r>/;
+
+  if (signature.startsWith("data:image/png;base64,")) {
+    files["word/media/tanda-tangan-kandidat.png"] = base64ToBytes(
+      signature.slice("data:image/png;base64,".length),
+    );
+    const relsPath = "word/_rels/document.xml.rels";
+    const rels = strFromU8(files[relsPath]!).replace(
+      "</Relationships>",
+      `<Relationship Id="${SIGNATURE_REL_ID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/tanda-tangan-kandidat.png"/></Relationships>`,
+    );
+    files[relsPath] = strToU8(rels);
+    source = source.replace(signatureRun, signatureDrawingXml());
+  } else {
+    source = source.replace(signatureRun, "");
+  }
+
+  const xml = source.replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
     if (path === "education.nonFormalText") return escapeXml(extras);
     const value = resolvePath(data, path);
     if (value === true) return "√";
