@@ -35,8 +35,12 @@ function AdminAuthPage() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/admin", replace: true });
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) return;
+      const roles = await fetchMyRoles();
+      if (roles.some((r) => r === "admin" || r === "hr")) {
+        navigate({ to: "/admin", replace: true });
+      }
     });
   }, [navigate]);
 
@@ -84,15 +88,22 @@ function AdminAuthPage() {
             Khusus tim HR dan admin PT. Dover Chemical.
           </p>
 
-          <div className="mt-5 space-y-4">
+          <form
+            className="mt-5 space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!loading) void handleAdminSignIn();
+            }}
+          >
             <div className="space-y-2">
               <Label htmlFor="admin-email">Email admin</Label>
               <Input
                 id="admin-email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@doverchemical.co.id"
+                placeholder="admin@dovechem.co.id"
               />
             </div>
             <div className="space-y-2">
@@ -100,14 +111,15 @@ function AdminAuthPage() {
               <Input
                 id="admin-pass"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button className="w-full" disabled={loading} onClick={handleAdminSignIn}>
-              Masuk sebagai admin
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Memproses..." : "Masuk sebagai admin"}
             </Button>
-          </div>
+          </form>
 
           <p className="mt-4 text-xs text-muted-foreground">
             Akun admin dibuat oleh HR. Jika belum punya akses, hubungi tim HR.
