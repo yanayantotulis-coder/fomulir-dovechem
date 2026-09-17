@@ -71,10 +71,21 @@ function FormPage() {
     if (appQuery.data && !data) setData(appQuery.data.data);
   }, [appQuery.data, data]);
 
+  const [showErrors, setShowErrors] = useState(false);
+
   const save = useMutation({
     mutationFn: async (status?: "draft" | "submitted") => {
       if (!appQuery.data || !data) return;
       if (status === "submitted") {
+        const incomplete = FORM_SECTIONS.filter((s) => !isSectionComplete(s, data));
+        if (incomplete.length > 0) {
+          const first = FORM_SECTIONS.findIndex((s) => s.id === incomplete[0]!.id);
+          setActive(first);
+          setShowErrors(true);
+          throw new Error(
+            `Lengkapi bagian: ${incomplete.map((s) => `${s.no}. ${s.titleId}`).join(", ")}`,
+          );
+        }
         const uploadedTypes = new Set((docsQuery.data ?? []).map((doc) => doc.doc_type));
         const missing = REQUIRED_DOC_TYPES.filter((type) => !uploadedTypes.has(type.key));
         if (missing.length > 0) {
