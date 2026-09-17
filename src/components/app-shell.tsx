@@ -19,7 +19,7 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-4">
-          <Link to="/" className="font-display text-base font-bold text-foreground">
+          <Link to={isStaff ? "/" : "/dashboard"} className="font-display text-base font-bold text-foreground">
             PT. DOVER CHEMICAL
           </Link>
           <nav className="flex flex-1 flex-wrap gap-1">
@@ -33,14 +33,7 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
                 </Button>
               </>
             ) : (
-              <>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/formulir">Pengisian Formulir</Link>
-                </Button>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/dashboard">Unggah Berkas</Link>
-                </Button>
-              </>
+              <span className="px-3 text-sm font-medium text-muted-foreground">Area Kandidat</span>
             )}
           </nav>
           <Button variant="outline" size="sm" onClick={signOut}>
