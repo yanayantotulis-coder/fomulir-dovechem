@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { FormSection } from "@/components/form-section";
 import { Button } from "@/components/ui/button";
-import { FORM_SECTIONS, type ApplicationData } from "@/lib/form-schema";
+import { FORM_SECTIONS, REQUIRED_DOC_TYPES, type ApplicationData } from "@/lib/form-schema";
 import {
+  fetchDocuments,
   fetchMyRoles,
   fetchOrCreateMyApplication,
   saveApplication,
@@ -51,6 +52,14 @@ function FormPage() {
     queryKey: ["my-application"],
     queryFn: fetchOrCreateMyApplication,
   });
+  const docsQuery = useQuery({
+    queryKey: ["my-documents", appQuery.data?.id],
+    queryFn: () => {
+      if (!appQuery.data) throw new Error("Lamaran belum tersedia");
+      return fetchDocuments(appQuery.data.id);
+    },
+    enabled: Boolean(appQuery.data?.id),
+  });
 
   useEffect(() => {
     if (appQuery.data && !data) setData(appQuery.data.data);
@@ -59,13 +68,21 @@ function FormPage() {
   const save = useMutation({
     mutationFn: async (status?: "draft" | "submitted") => {
       if (!appQuery.data || !data) return;
+      if (status === "submitted") {
+        const uploadedTypes = new Set((docsQuery.data ?? []).map((doc) => doc.doc_type));
+        const missing = REQUIRED_DOC_TYPES.filter((type) => !uploadedTypes.has(type.key));
+        if (missing.length > 0) {
+          throw new Error(`Lengkapi berkas wajib: ${missing.map((type) => type.label).join(", ")}`);
+        }
+      }
       await saveApplication(appQuery.data.id, data, status);
     },
     onSuccess: (_r, status) => {
       queryClient.invalidateQueries({ queryKey: ["my-application"] });
       toast.success(status === "submitted" ? "Formulir dikirim ke HR" : "Draf tersimpan");
     },
-    onError: () => toast.error("Gagal menyimpan, coba lagi"),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Gagal menyimpan, coba lagi"),
   });
 
   const onChange = (sectionId: string, key: string, value: unknown) =>
@@ -139,7 +156,7 @@ function FormPage() {
           <Button variant="secondary" disabled={save.isPending} onClick={() => save.mutate("draft")}>
             Simpan draf
           </Button>
-          <Button disabled={save.isPending} onClick={() => save.mutate("submitted")}>
+          <Button disabled={save.isPending || docsQuery.isLoading} onClick={() => save.mutate("submitted")}>
             Kirim ke HR
           </Button>
         </div>

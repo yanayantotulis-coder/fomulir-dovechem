@@ -508,10 +508,12 @@ export function mergeWithEmpty(stored: unknown): ApplicationData {
 }
 
 export const DOC_TYPES = [
-  { key: "photo", label: "Foto 3x4" },
-  { key: "cv", label: "CV / Curriculum Vitae" },
-  { key: "ktp", label: "KTP" },
-  { key: "ijazah", label: "Ijazah" },
-  { key: "transkrip", label: "Transkrip Nilai" },
-  { key: "sertifikat", label: "Sertifikat / Lainnya" },
+  { key: "photo", label: "Foto 3x4", required: true },
+  { key: "cv", label: "CV / Curriculum Vitae", required: true },
+  { key: "ktp", label: "KTP", required: true },
+  { key: "ijazah", label: "Ijazah", required: true },
+  { key: "transkrip", label: "Transkrip Nilai", required: true },
+  { key: "sertifikat", label: "Sertifikat / Lainnya", required: false },
 ];
+
+export const REQUIRED_DOC_TYPES = DOC_TYPES.filter((type) => type.required);
