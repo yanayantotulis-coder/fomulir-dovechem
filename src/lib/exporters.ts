@@ -1,4 +1,4 @@
-import { FORM_SECTIONS, type ApplicationData, type Section } from "./form-schema";
+import { type ApplicationData } from "./form-schema";
 
 const asText = (value: unknown): string => {
   if (value === true) return "Ya";
@@ -6,28 +6,6 @@ const asText = (value: unknown): string => {
   return String(value);
 };
 
-const rowIsEmpty = (row: Record<string, unknown>, skipFirst: string) =>
-  Object.entries(row).every(([k, v]) => k === skipFirst || asText(v).trim() === "");
-
-type TablePart = { title: string; head: string[]; body: string[][] };
-
-function sectionParts(section: Section, data: ApplicationData) {
-  const sectionData = data[section.id] ?? {};
-  const fieldRows: string[][] = (section.fields ?? [])
-    .filter((f) => f.type !== "signature")
-    .map((f) => [`${f.labelId} / ${f.label}`, asText(sectionData[f.key])]);
-  const tables: TablePart[] = (section.tables ?? []).map((t) => {
-    const rows = Array.isArray(sectionData[t.key])
-      ? (sectionData[t.key] as Record<string, unknown>[])
-      : [];
-    const firstKey = t.columns[0]?.key ?? "";
-    const body = rows
-      .filter((r) => !rowIsEmpty(r, t.presets ? firstKey : "__none__"))
-      .map((r) => t.columns.map((c) => asText(r[c.key])));
-    return { title: `${t.labelId} / ${t.label}`, head: t.columns.map((c) => c.label), body };
-  });
-  return { fieldRows, tables };
-}
 
 export function fileBaseName(data: ApplicationData) {
   const name = asText((data["personal"] ?? {})["fullName"]) || "Kandidat";
