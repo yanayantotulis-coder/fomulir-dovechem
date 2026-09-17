@@ -13,10 +13,9 @@ type TablePart = { title: string; head: string[]; body: string[][] };
 
 function sectionParts(section: Section, data: ApplicationData) {
   const sectionData = data[section.id] ?? {};
-  const fieldRows: string[][] = (section.fields ?? []).map((f) => [
-    `${f.labelId} / ${f.label}`,
-    asText(sectionData[f.key]),
-  ]);
+  const fieldRows: string[][] = (section.fields ?? [])
+    .filter((f) => f.type !== "signature")
+    .map((f) => [`${f.labelId} / ${f.label}`, asText(sectionData[f.key])]);
   const tables: TablePart[] = (section.tables ?? []).map((t) => {
     const rows = Array.isArray(sectionData[t.key])
       ? (sectionData[t.key] as Record<string, unknown>[])
