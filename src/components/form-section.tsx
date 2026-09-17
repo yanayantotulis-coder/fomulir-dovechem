@@ -104,12 +104,14 @@ export function FormSection({ section, data, onChange, errors }: Props) {
             />
           )}
         </div>
+        {error ? <p className="mt-1 text-xs font-medium text-destructive">{error}</p> : null}
       </div>
     );
   };
 
   const renderTable = (table: TableDef) => {
     const rows = (Array.isArray(values[table.key]) ? values[table.key] : []) as Row[];
+    const tableError = errors?.tables[table.key];
     return (
       <div key={table.key} className="mt-8">
         <h4 className="text-sm font-semibold text-foreground">
