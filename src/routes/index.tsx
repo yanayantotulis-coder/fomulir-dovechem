@@ -157,17 +157,7 @@ function Landing() {
       <header className="sticky top-0 z-10 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary font-display text-lg font-bold text-primary-foreground">
-              DC
-            </div>
-            <div>
-              <p className="font-display text-base font-bold leading-tight tracking-tight text-foreground">
-                PT. DOVER CHEMICAL
-              </p>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                Portal Rekrutmen Resmi
-              </p>
-            </div>
+            <DoverLogo className="h-14 w-auto" />
           </div>
           <nav className="flex items-center gap-2">
             {signedIn ? (
