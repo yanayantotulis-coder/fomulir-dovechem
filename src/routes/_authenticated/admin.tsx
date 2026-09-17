@@ -94,6 +94,35 @@ function AdminPage() {
     });
   }, [docsQuery.data, docQuery, nameByUser]);
 
+  const docGroups = useMemo(() => {
+    const map = new Map<string, { name: string; email: string; docs: AllDocumentRecord[] }>();
+    for (const d of docs) {
+      const p = nameByUser.get(d.user_id);
+      const entry = map.get(d.user_id) ?? {
+        name: p?.full_name || p?.email || "Kandidat tanpa nama",
+        email: p?.email || "-",
+        docs: [],
+      };
+      entry.docs.push(d);
+      map.set(d.user_id, entry);
+    }
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [docs, nameByUser]);
+
+  const [zipBusy, setZipBusy] = useState<string | null>(null);
+
+  const runZip = async (key: string, task: () => Promise<void>) => {
+    setZipBusy(key);
+    try {
+      await task();
+      toast.success("Berkas gabungan berhasil diunduh.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal membuat berkas gabungan.");
+    } finally {
+      setZipBusy(null);
+    }
+  };
+
   if (rolesQuery.isLoading) {
     return (
       <AppShell>
