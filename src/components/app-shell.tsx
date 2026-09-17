@@ -30,9 +30,14 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
               <Link to="/formulir">Formulir</Link>
             </Button>
             {isStaff ? (
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/hr">Bank Data HR</Link>
-              </Button>
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/admin">Dashboard Admin</Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/hr">Bank Data HR</Link>
+                </Button>
+              </>
             ) : null}
           </nav>
           <Button variant="outline" size="sm" onClick={signOut}>
