@@ -16,6 +16,10 @@ import {
   type CandidateLoginRecord,
 } from "@/lib/candidate-api";
 import { DOC_TYPES } from "@/lib/form-schema";
+import {
+  downloadAllCandidateDocsZip,
+  downloadCandidateDocsZip,
+} from "@/lib/doc-bundle";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
