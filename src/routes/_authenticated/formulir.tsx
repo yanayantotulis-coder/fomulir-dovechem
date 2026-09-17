@@ -110,6 +110,24 @@ function FormPage() {
   const isStaff = (rolesQuery.data ?? []).some((r) => r === "hr" || r === "admin");
   const section = FORM_SECTIONS[active];
 
+  const completed = data
+    ? FORM_SECTIONS.map((s) => isSectionComplete(s, data))
+    : FORM_SECTIONS.map(() => false);
+  const firstIncomplete = completed.findIndex((ok) => !ok);
+  const maxUnlocked = firstIncomplete === -1 ? FORM_SECTIONS.length - 1 : firstIncomplete;
+  const currentComplete = completed[active] === true;
+  const errors = data && section && showErrors ? validateSection(section, data) : undefined;
+
+  const goNext = () => {
+    if (!currentComplete) {
+      setShowErrors(true);
+      toast.error("Lengkapi semua isian wajib di bagian ini sebelum lanjut");
+      return;
+    }
+    setShowErrors(false);
+    setActive((i) => Math.min(FORM_SECTIONS.length - 1, i + 1));
+  };
+
   if (appQuery.isLoading || !data || !section) {
     return (
       <AppShell isStaff={isStaff}>
