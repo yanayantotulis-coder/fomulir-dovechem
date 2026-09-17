@@ -34,8 +34,9 @@ function paragraphBlocks(p: Element): DocBlock[] {
   const jc = pPr?.getElementsByTagNameNS(W, "jc")[0]?.getAttributeNS(W, "val") ?? "left";
   const align = jc === "center" ? "center" : jc === "right" ? "right" : "left";
   if (text) blocks.push({ type: "paragraph", text, bold, align });
-  if (p.getElementsByTagName("w:drawing").length || p.getElementsByTagNameNS(W, "drawing").length)
+  if (p.outerHTML?.includes('name="TandaTangan"') || p.innerHTML?.includes('name="TandaTangan"'))
     blocks.push({ type: "image" });
+
   return blocks;
 }
 
