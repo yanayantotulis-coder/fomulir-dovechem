@@ -85,7 +85,49 @@ export async function downloadPdf(data: ApplicationData) {
       cursor = 48;
     }
   }
+
+  const signature = asText((data["declaration"] ?? {})["signature"]);
+  if (signature.startsWith("data:image/png;base64,")) {
+    if (cursor > 640) {
+      doc.addPage();
+      cursor = 48;
+    }
+    doc.setFontSize(9);
+    doc.text("Tanda Tangan Kandidat / Signature", marginX, cursor + 12);
+    doc.addImage(signature, "PNG", marginX, cursor + 18, 170, 62);
+    doc.text(
+      `( ${asText((data["declaration"] ?? {})["signatureName"])} )`,
+      marginX,
+      cursor + 94,
+    );
+  }
   doc.save(`${fileBaseName(data)}.pdf`);
+}
+
+const SIGNATURE_REL_ID = "rIdTandaTangan";
+
+function base64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function signatureDrawingXml(): string {
+  const cx = 1828800;
+  const cy = 731520;
+  return (
+    `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">` +
+    `<wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="1001" name="TandaTangan"/>` +
+    `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+    `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+    `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+    `<pic:nvPicPr><pic:cNvPr id="1001" name="TandaTangan"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    `<pic:blipFill><a:blip r:embed="${SIGNATURE_REL_ID}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>` +
+    `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>` +
+    `</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`
+  );
 }
 
 const escapeXml = (value: string) =>
