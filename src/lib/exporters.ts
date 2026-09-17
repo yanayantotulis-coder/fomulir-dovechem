@@ -86,8 +86,8 @@ export async function downloadPdf(data: ApplicationData) {
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    for (let index = 0; index < pages.length; index += 1) {
-      const page = pages[index];
+    let pdfPageIndex = 0;
+    for (const page of pages) {
       if (!page) continue;
       const canvas = await html2canvas(page, {
         scale: 2,
@@ -95,24 +95,40 @@ export async function downloadPdf(data: ApplicationData) {
         useCORS: true,
         logging: false,
       });
-      if (index > 0) pdf.addPage("a4", "portrait");
-
-      const pageRatio = canvas.width / canvas.height;
-      const pdfRatio = pdfWidth / pdfHeight;
-      const renderWidth = pageRatio > pdfRatio ? pdfWidth : pdfHeight * pageRatio;
-      const renderHeight = pageRatio > pdfRatio ? pdfWidth / pageRatio : pdfHeight;
-      const offsetX = (pdfWidth - renderWidth) / 2;
-      const offsetY = (pdfHeight - renderHeight) / 2;
-      pdf.addImage(
-        canvas.toDataURL("image/jpeg", 0.94),
-        "JPEG",
-        offsetX,
-        offsetY,
-        renderWidth,
-        renderHeight,
-        undefined,
-        "FAST",
-      );
+      const sliceHeight = Math.max(1, Math.round(canvas.width * (pdfHeight / pdfWidth)));
+      for (let sourceY = 0; sourceY < canvas.height; sourceY += sliceHeight) {
+        const currentHeight = Math.min(sliceHeight, canvas.height - sourceY);
+        const slice = document.createElement("canvas");
+        slice.width = canvas.width;
+        slice.height = sliceHeight;
+        const context = slice.getContext("2d");
+        if (!context) throw new Error("Halaman PDF tidak dapat digambar.");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, slice.width, slice.height);
+        context.drawImage(
+          canvas,
+          0,
+          sourceY,
+          canvas.width,
+          currentHeight,
+          0,
+          0,
+          canvas.width,
+          currentHeight,
+        );
+        if (pdfPageIndex > 0) pdf.addPage("a4", "portrait");
+        pdf.addImage(
+          slice.toDataURL("image/jpeg", 0.94),
+          "JPEG",
+          0,
+          0,
+          pdfWidth,
+          pdfHeight,
+          undefined,
+          "FAST",
+        );
+        pdfPageIndex += 1;
+      }
     }
 
     pdf.save(`${fileBaseName(data)}.pdf`);
