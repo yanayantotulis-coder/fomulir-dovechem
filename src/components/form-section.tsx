@@ -28,9 +28,10 @@ type Props = {
   section: Section;
   data: ApplicationData;
   onChange: (sectionId: string, key: string, value: unknown) => void;
+  errors?: SectionErrors;
 };
 
-export function FormSection({ section, data, onChange }: Props) {
+export function FormSection({ section, data, onChange, errors }: Props) {
   const values = (data[section.id] ?? {}) as Record<string, unknown>;
 
   const setTableRows = (table: TableDef, rows: Row[]) => onChange(section.id, table.key, rows);
@@ -38,6 +39,8 @@ export function FormSection({ section, data, onChange }: Props) {
   const renderField = (field: Field) => {
     const value = values[field.key];
     const id = `${section.id}-${field.key}`;
+    const required = isFieldRequired(section.id, field.key);
+    const error = errors?.fields[field.key];
     return (
       <div key={field.key} className={field.full || field.type === "textarea" ? "md:col-span-2" : ""}>
         <label htmlFor={id} className="label-form">
@@ -45,6 +48,15 @@ export function FormSection({ section, data, onChange }: Props) {
           <span className="ml-1 font-normal normal-case text-muted-foreground/70">
             / {field.labelId}
           </span>
+          {required ? (
+            <span className="ml-1 text-destructive" aria-hidden="true">
+              *
+            </span>
+          ) : (
+            <span className="ml-1 font-normal normal-case text-muted-foreground/60">
+              (opsional)
+            </span>
+          )}
         </label>
         <div className="mt-1.5">
           {field.type === "textarea" ? (
