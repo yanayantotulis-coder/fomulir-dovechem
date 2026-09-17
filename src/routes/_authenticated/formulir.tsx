@@ -182,7 +182,14 @@ function FormPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">Formulir Lamaran Kerja</h1>
           <p className="text-sm text-muted-foreground">
-            Job Application Form 2026 — isian tersimpan per bagian.
+            Job Application Form 2026 — isian tersimpan otomatis.
+          </p>
+          <p className="text-xs text-muted-foreground" aria-live="polite">
+            {autoSaving
+              ? "Menyimpan otomatis..."
+              : autoSavedAt
+                ? `Tersimpan otomatis ${autoSavedAt.toLocaleTimeString("id-ID")}`
+                : "Isian akan tersimpan otomatis, aman jika halaman ter-refresh."}
           </p>
         </div>
         <Button asChild variant="outline">
