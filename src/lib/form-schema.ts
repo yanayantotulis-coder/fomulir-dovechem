@@ -1,4 +1,11 @@
-export type FieldType = "text" | "date" | "textarea" | "select" | "email" | "checkbox";
+export type FieldType =
+  | "text"
+  | "date"
+  | "textarea"
+  | "select"
+  | "email"
+  | "checkbox"
+  | "signature";
 
 export type Field = {
   key: string;
