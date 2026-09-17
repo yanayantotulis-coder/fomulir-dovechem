@@ -154,3 +154,35 @@ export async function deleteDocument(doc: DocumentRecord) {
   const { error } = await supabase.from("application_documents").delete().eq("id", doc.id);
   if (error) throw error;
 }
+
+export type CandidateLoginRecord = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function fetchAllCandidateLogins(): Promise<CandidateLoginRecord[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, phone, created_at, updated_at")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export type AllDocumentRecord = DocumentRecord & {
+  application_id: string;
+  user_id: string;
+};
+
+export async function fetchAllDocuments(): Promise<AllDocumentRecord[]> {
+  const { data, error } = await supabase
+    .from("application_documents")
+    .select("id, doc_type, file_name, file_path, created_at, application_id, user_id")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
