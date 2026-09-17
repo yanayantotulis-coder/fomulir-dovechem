@@ -89,85 +89,70 @@ export async function downloadPdf(data: ApplicationData) {
   doc.save(`${fileBaseName(data)}.pdf`);
 }
 
-export async function downloadDocx(data: ApplicationData) {
-  const docx = await import("docx");
-  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, HeadingLevel, ShadingType, BorderStyle } =
-    docx;
-  const border = { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" };
-  const borders = { top: border, bottom: border, left: border, right: border };
-  const cell = (text: string, width: number, bold = false, fill?: string) =>
-    new TableCell({
-      borders,
-      width: { size: width, type: WidthType.DXA },
-      ...(fill ? { shading: { fill, type: ShadingType.CLEAR } } : {}),
-      margins: { top: 60, bottom: 60, left: 100, right: 100 },
-      children: [new Paragraph({ children: [new TextRun({ text, bold, size: 18 })] })],
-    });
+const escapeXml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .join('</w:t><w:br/><w:t xml:space="preserve">');
 
-  const children: (typeof Paragraph.prototype | unknown)[] = [];
-  children.push(
-    new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun({ text: "PT. DOVER CHEMICAL", bold: true, size: 30 })] }),
-    new Paragraph({ children: [new TextRun({ text: "Application Form / Formulir Lamaran Kerja", size: 22 })] }),
-  );
-
-  for (const section of FORM_SECTIONS) {
-    const { fieldRows, tables } = sectionParts(section, data);
-    children.push(
-      new Paragraph({
-        spacing: { before: 240, after: 120 },
-        heading: HeadingLevel.HEADING_2,
-        children: [
-          new TextRun({ text: `${section.no}. ${section.titleId} / ${section.title}`, bold: true, size: 24 }),
-        ],
-      }),
-    );
-    if (fieldRows.length) {
-      children.push(
-        new Table({
-          width: { size: 9360, type: WidthType.DXA },
-          columnWidths: [3360, 6000],
-          rows: fieldRows.map(
-            (r) => new TableRow({ children: [cell(r[0] ?? "", 3360, true, "EDF2F7"), cell(r[1] ?? "", 6000)] }),
-          ),
-        }),
-      );
-    }
-    for (const table of tables) {
-      const colCount = table.head.length;
-      const width = Math.floor(9360 / colCount);
-      const widths = table.head.map(() => width);
-      children.push(
-        new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: table.title, bold: true, size: 20 })] }),
-        new Table({
-          width: { size: width * colCount, type: WidthType.DXA },
-          columnWidths: widths,
-          rows: [
-            new TableRow({ children: table.head.map((h) => cell(h, width, true, "D5E8F0")) }),
-            ...(table.body.length ? table.body : [table.head.map(() => "-")]).map(
-              (r) => new TableRow({ children: r.map((v) => cell(v, width)) }),
-            ),
-          ],
-        }),
-      );
-    }
-    if (section.note) {
-      children.push(new Paragraph({ children: [new TextRun({ text: section.note, italics: true, size: 16 })] }));
-    }
+/** Ambil nilai dari data formulir memakai jalur bertitik, mis. personal.fullName */
+function resolvePath(data: ApplicationData, path: string): unknown {
+  const parts = path.split(".");
+  let current: unknown = data;
+  for (const part of parts) {
+    if (current === null || current === undefined) return "";
+    if (Array.isArray(current)) current = current[Number(part)];
+    else if (typeof current === "object") current = (current as Record<string, unknown>)[part];
+    else return "";
   }
+  return current;
+}
 
-  const doc = new Document({
-    styles: { default: { document: { run: { font: "Arial", size: 20 } } } },
-    sections: [
-      {
-        properties: {
-          page: { size: { width: 12240, height: 15840 }, margin: { top: 1000, right: 1000, bottom: 1000, left: 1000 } },
-        },
-        children: children as never,
-      },
-    ],
+function nonFormalText(data: ApplicationData): string {
+  const rows = (data["education"]?.["nonFormal"] ?? []) as Record<string, unknown>[];
+  return rows
+    .filter((r) => asText(r["name"]).trim() !== "")
+    .map(
+      (r) =>
+        `${asText(r["name"])} - ${asText(r["heldBy"])} (${asText(r["date"])}) ${asText(r["notes"])}`.trim(),
+    )
+    .join("\n");
+}
+
+/**
+ * Unduhan Word memakai berkas template asli PT. Dover Chemical:
+ * template berisi token {{...}} yang diisi dengan data kandidat dari sistem.
+ */
+export async function downloadDocx(data: ApplicationData) {
+  const [{ unzipSync, zipSync, strFromU8, strToU8 }, templateUrl] = await Promise.all([
+    import("fflate"),
+    import("@/assets/formulir-dover-template.docx?url").then((m) => m.default as string),
+  ]);
+  const response = await fetch(templateUrl);
+  if (!response.ok) throw new Error("Template formulir Word tidak dapat dibaca.");
+  const files = unzipSync(new Uint8Array(await response.arrayBuffer()));
+  const docPath = "word/document.xml";
+  const extras = nonFormalText(data);
+
+  const xml = strFromU8(files[docPath]!).replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
+    if (path === "education.nonFormalText") return escapeXml(extras);
+    const value = resolvePath(data, path);
+    if (value === true) return "√";
+    if (value === false || value === null || value === undefined) return path.endsWith(".checked") ? "□" : "";
+    return escapeXml(String(value));
   });
-  const blob = await Packer.toBlob(doc);
-  triggerDownload(blob, `${fileBaseName(data)}.docx`);
+
+  files[docPath] = strToU8(xml);
+  const zipped = zipSync(files, { level: 6 });
+  triggerDownload(
+    new Blob([zipped as unknown as BlobPart], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }),
+    `${fileBaseName(data)}.docx`,
+  );
 }
 
 export async function downloadXlsx(data: ApplicationData) {
