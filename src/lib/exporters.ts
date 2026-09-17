@@ -1,4 +1,4 @@
-import { FORM_SECTIONS, type ApplicationData, type Section } from "./form-schema";
+import { type ApplicationData } from "./form-schema";
 
 const asText = (value: unknown): string => {
   if (value === true) return "Ya";
@@ -6,103 +6,88 @@ const asText = (value: unknown): string => {
   return String(value);
 };
 
-const rowIsEmpty = (row: Record<string, unknown>, skipFirst: string) =>
-  Object.entries(row).every(([k, v]) => k === skipFirst || asText(v).trim() === "");
-
-type TablePart = { title: string; head: string[]; body: string[][] };
-
-function sectionParts(section: Section, data: ApplicationData) {
-  const sectionData = data[section.id] ?? {};
-  const fieldRows: string[][] = (section.fields ?? [])
-    .filter((f) => f.type !== "signature")
-    .map((f) => [`${f.labelId} / ${f.label}`, asText(sectionData[f.key])]);
-  const tables: TablePart[] = (section.tables ?? []).map((t) => {
-    const rows = Array.isArray(sectionData[t.key])
-      ? (sectionData[t.key] as Record<string, unknown>[])
-      : [];
-    const firstKey = t.columns[0]?.key ?? "";
-    const body = rows
-      .filter((r) => !rowIsEmpty(r, t.presets ? firstKey : "__none__"))
-      .map((r) => t.columns.map((c) => asText(r[c.key])));
-    return { title: `${t.labelId} / ${t.label}`, head: t.columns.map((c) => c.label), body };
-  });
-  return { fieldRows, tables };
-}
 
 export function fileBaseName(data: ApplicationData) {
   const name = asText((data["personal"] ?? {})["fullName"]) || "Kandidat";
   return `Formulir_Lamaran_${name.replace(/[^\w\s-]/g, "").replace(/\s+/g, "_")}`;
 }
 
+/**
+ * PDF dibuat dari berkas Word template resmi yang sudah terisi data kandidat,
+ * jadi susunan halaman PDF mengikuti formulir Word (tinggal konversi).
+ */
 export async function downloadPdf(data: ApplicationData) {
-  const [{ default: JsPDF }, { default: autoTable }] = await Promise.all([
-    import("jspdf"),
-    import("jspdf-autotable"),
-  ]);
+  const [{ default: JsPDF }, { default: autoTable }, { docxToBlocks }, docxBytes] =
+    await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+      import("./docx-render"),
+      buildDocxBytes(data),
+    ]);
+  const blocks = await docxToBlocks(docxBytes);
   const doc = new JsPDF({ unit: "pt", format: "a4" });
   const marginX = 36;
-  doc.setFontSize(14);
-  doc.text("PT. DOVER CHEMICAL", marginX, 44);
-  doc.setFontSize(11);
-  doc.text("Application Form / Formulir Lamaran Kerja", marginX, 60);
-  let cursor = 78;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const usable = pageWidth - marginX * 2;
+  let cursor = 48;
+  const signature = asText((data["declaration"] ?? {})["signature"]);
 
-  for (const section of FORM_SECTIONS) {
-    const { fieldRows, tables } = sectionParts(section, data);
-    doc.setFontSize(10);
+  const ensureSpace = (needed: number) => {
+    if (cursor + needed <= pageHeight - 40) return;
+    doc.addPage();
+    cursor = 48;
+  };
+
+  let signaturePlaced = false;
+  for (const block of blocks) {
+    if (block.type === "paragraph") {
+      doc.setFontSize(block.bold ? 10 : 9);
+      doc.setFont("helvetica", block.bold ? "bold" : "normal");
+      const lines = doc.splitTextToSize(block.text, usable) as string[];
+      ensureSpace(lines.length * 12 + 6);
+      const x = block.align === "center" ? pageWidth / 2 : block.align === "right" ? pageWidth - marginX : marginX;
+      doc.text(lines, x, cursor, { align: block.align });
+      cursor += lines.length * 12 + 4;
+      continue;
+    }
+    if (block.type === "image") {
+      if (!signature.startsWith("data:image/png;base64,")) continue;
+      ensureSpace(80);
+      try {
+        doc.addImage(signature, "PNG", marginX, cursor, 170, 62);
+        cursor += 70;
+        signaturePlaced = true;
+      } catch {
+        signaturePlaced = true;
+      }
+      continue;
+
+    }
     autoTable(doc, {
       startY: cursor,
-      head: [[`${section.no}. ${section.titleId} / ${section.title}`, ""]],
-      body: fieldRows.length ? fieldRows : [["", ""]],
+      body: block.rows,
       theme: "grid",
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [16, 42, 67], textColor: 255, fontSize: 9 },
-      columnStyles: { 0: { cellWidth: 200, fontStyle: "bold" } },
+      styles: { fontSize: 7.5, cellPadding: 3, overflow: "linebreak", valign: "top" },
       margin: { left: marginX, right: marginX },
+      tableWidth: usable,
     });
     cursor = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-
-    for (const table of tables) {
-      autoTable(doc, {
-        startY: cursor,
-        head: [[{ content: table.title, colSpan: table.head.length }], table.head],
-        body: table.body.length ? table.body : [table.head.map(() => "-")],
-        theme: "grid",
-        styles: { fontSize: 7.5, cellPadding: 3 },
-        headStyles: { fillColor: [45, 74, 105], textColor: 255 },
-        margin: { left: marginX, right: marginX },
-      });
-      cursor = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-    }
-    if (section.note) {
-      const lines = doc.splitTextToSize(section.note, 520) as string[];
-      doc.setFontSize(7.5);
-      doc.text(lines, marginX, cursor + 4);
-      cursor += lines.length * 10 + 8;
-    }
-    if (cursor > 740) {
-      doc.addPage();
-      cursor = 48;
-    }
   }
 
-  const signature = asText((data["declaration"] ?? {})["signature"]);
-  if (signature.startsWith("data:image/png;base64,")) {
-    if (cursor > 640) {
-      doc.addPage();
-      cursor = 48;
-    }
+  if (!signaturePlaced && signature.startsWith("data:image/png;base64,")) {
+    ensureSpace(100);
     doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
     doc.text("Tanda Tangan Kandidat / Signature", marginX, cursor + 12);
     doc.addImage(signature, "PNG", marginX, cursor + 18, 170, 62);
-    doc.text(
-      `( ${asText((data["declaration"] ?? {})["signatureName"])} )`,
-      marginX,
-      cursor + 94,
-    );
+    doc.text(`( ${asText((data["declaration"] ?? {})["signatureName"])} )`, marginX, cursor + 94);
   }
+
   doc.save(`${fileBaseName(data)}.pdf`);
 }
+
+
 
 const SIGNATURE_REL_ID = "rIdTandaTangan";
 
@@ -220,32 +205,39 @@ export async function downloadDocx(data: ApplicationData) {
   );
 }
 
+/**
+ * Excel juga diambil dari berkas Word template yang sudah terisi,
+ * sehingga baris/kolomnya mengikuti isi formulir resmi.
+ */
 export async function downloadXlsx(data: ApplicationData) {
-  const XLSX = await import("xlsx");
-  const wb = XLSX.utils.book_new();
-  for (const section of FORM_SECTIONS) {
-    const { fieldRows, tables } = sectionParts(section, data);
-    const aoa: string[][] = [[`${section.no}. ${section.titleId} / ${section.title}`]];
-    if (fieldRows.length) {
+  const [XLSX, { docxToBlocks }, docxBytes] = await Promise.all([
+    import("xlsx"),
+    import("./docx-render"),
+    buildDocxBytes(data),
+  ]);
+  const blocks = await docxToBlocks(docxBytes);
+  const aoa: string[][] = [];
+  for (const block of blocks) {
+    if (block.type === "paragraph") aoa.push([block.text]);
+    else if (block.type === "image") aoa.push(["[Tanda tangan kandidat terlampir pada PDF/Word]"]);
+    else {
       aoa.push([]);
-      aoa.push(...fieldRows);
-    }
-    for (const table of tables) {
+      aoa.push(...block.rows);
       aoa.push([]);
-      aoa.push([table.title]);
-      aoa.push(table.head);
-      aoa.push(...(table.body.length ? table.body : [table.head.map(() => "-")]));
     }
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws["!cols"] = [{ wch: 40 }, { wch: 34 }, { wch: 24 }, { wch: 22 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
-    XLSX.utils.book_append_sheet(wb, ws, section.no);
   }
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(aoa.length ? aoa : [[""]]);
+  const maxCols = Math.max(1, ...aoa.map((r) => r.length));
+  ws["!cols"] = Array.from({ length: maxCols }, (_, i) => ({ wch: i === 0 ? 46 : 26 }));
+  XLSX.utils.book_append_sheet(wb, ws, "Formulir Lamaran");
   const out = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as ArrayBuffer;
   triggerDownload(
     new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
     `${fileBaseName(data)}.xlsx`,
   );
 }
+
 
 export type CandidateRow = {
   full_name: string | null;
