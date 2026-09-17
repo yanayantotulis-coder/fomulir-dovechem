@@ -4,7 +4,7 @@ import { CheckCircle2, ChevronRight, ClipboardList, FileText, Upload } from "luc
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { DOC_TYPES, FORM_SECTIONS } from "@/lib/form-schema";
+import { DOC_TYPES, FORM_SECTIONS, REQUIRED_DOC_TYPES } from "@/lib/form-schema";
 import {
   deleteDocument,
   fetchDocuments,
@@ -96,6 +96,11 @@ function Dashboard() {
 
   const isStaff = (rolesQuery.data ?? []).some((r) => r === "hr" || r === "admin");
   const app = appQuery.data;
+  const uploadedRequiredTypes = new Set(
+    (docsQuery.data ?? []).filter((doc) =>
+      REQUIRED_DOC_TYPES.some((type) => type.key === doc.doc_type),
+    ).map((doc) => doc.doc_type),
+  );
 
   return (
     <AppShell isStaff={isStaff}>
@@ -177,8 +182,11 @@ function Dashboard() {
                   <p className="text-xs font-semibold uppercase text-muted-foreground">Langkah 2</p>
                   <h2 className="mt-1 text-lg font-semibold text-foreground">Unggah Berkas Pendukung</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Pilih tombol pada jenis berkas yang sesuai. PDF, JPG, PNG, DOC, atau DOCX; maksimal 10 MB.
+                     Lima berkas utama wajib diunggah. Sertifikat/Lainnya bersifat opsional. PDF, JPG, PNG, DOC, atau DOCX; maksimal 10 MB.
                   </p>
+                   <p className="mt-2 text-sm font-semibold text-foreground">
+                     {uploadedRequiredTypes.size} dari {REQUIRED_DOC_TYPES.length} berkas wajib lengkap
+                   </p>
                 </div>
               </div>
 
@@ -195,7 +203,12 @@ function Dashboard() {
                           <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground">{type.label}</p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground">{type.label}</p>
+                            <span className="text-xs font-semibold text-muted-foreground">
+                              {type.required ? "Wajib" : "Opsional"}
+                            </span>
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {files.length > 0 ? `${files.length} file diunggah` : "Belum diunggah"}
                           </p>
