@@ -198,3 +198,12 @@ export async function fetchAllDocuments(): Promise<AllDocumentRecord[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+export async function fetchAllProfiles(): Promise<CandidateLoginRecord[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, phone, created_at, updated_at")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
