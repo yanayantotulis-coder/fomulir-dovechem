@@ -89,6 +89,57 @@ const checklists = [
   "Paket remunerasi & pernyataan",
 ];
 
+const sections = [
+  { no: "I", id: "Data Pribadi", en: "Personal Data" },
+  { no: "II", id: "Latar Belakang Keluarga", en: "Family Background" },
+  { no: "III", id: "Pendidikan & Kemampuan Bahasa", en: "Education & Languages" },
+  { no: "IV", id: "Organisasi & Prestasi", en: "Organization & Achievements" },
+  { no: "V", id: "Pengalaman Kerja", en: "Working Experience" },
+  { no: "VI", id: "Riwayat Kesehatan", en: "Medical Record" },
+  { no: "VII", id: "Referensi & Kontak Darurat", en: "References & Emergency" },
+  { no: "VIII", id: "Ketersediaan & Latar Belakang", en: "Availability & Background" },
+  { no: "IX", id: "Remunerasi", en: "Remuneration" },
+  { no: "X", id: "Pernyataan & Tanda Tangan", en: "Declaration & Signature" },
+];
+
+const documents = [
+  { title: "Foto 3x4", text: "Foto formal terbaru, tampak jelas, format JPG atau PNG." },
+  { title: "Curriculum Vitae", text: "CV terbaru berisi riwayat pendidikan dan pengalaman kerja." },
+  { title: "KTP", text: "Kartu identitas yang masih berlaku dan terbaca jelas." },
+  { title: "Ijazah & Transkrip", text: "Ijazah pendidikan terakhir beserta transkrip nilai." },
+];
+
+const stages = [
+  { title: "Seleksi administrasi", text: "Tim HR memeriksa kelengkapan formulir dan dokumen Anda." },
+  { title: "Wawancara HR", text: "Pembahasan riwayat kerja, motivasi, dan ekspektasi remunerasi." },
+  { title: "Wawancara user", text: "Diskusi teknis bersama calon atasan langsung di departemen." },
+  { title: "Penawaran kerja", text: "Kandidat terpilih menerima penawaran resmi dari perusahaan." },
+];
+
+const faqs = [
+  {
+    q: "Apakah formulir harus diisi sekali selesai?",
+    a: "Tidak. Setiap bagian dapat disimpan sebagai draf dan dilanjutkan kapan saja dari akun Anda.",
+  },
+  {
+    q: "Bagaimana kalau saya perlu memperbaiki isian setelah terkirim?",
+    a: "Buka kembali formulir dari akun Anda, perbaiki bagian yang salah, lalu kirim ulang ke HR.",
+  },
+  {
+    q: "Apakah tanda tangan bisa dilakukan online?",
+    a: "Ya. Pada bagian pernyataan Anda menandatangani langsung di layar, dan tanda tangan itu ikut tercetak pada berkas formulir.",
+  },
+  {
+    q: "Siapa yang bisa melihat data saya?",
+    a: "Hanya Anda sebagai pemilik akun dan tim HR PT. Dover Chemical. Kandidat lain tidak dapat melihat data Anda.",
+  },
+  {
+    q: "Apakah ada biaya dalam proses rekrutmen?",
+    a: "Tidak ada. Seluruh proses rekrutmen PT. Dover Chemical tidak dikenakan biaya apa pun.",
+  },
+];
+
+
 function Landing() {
   const [signedIn, setSignedIn] = useState(false);
 
