@@ -207,7 +207,11 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
   });
 
   files[docPath] = strToU8(xml);
-  const zipped = zipSync(files, { level: 6 });
+  return zipSync(files, { level: 6 });
+}
+
+export async function downloadDocx(data: ApplicationData) {
+  const zipped = await buildDocxBytes(data);
   triggerDownload(
     new Blob([zipped as unknown as BlobPart], {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
