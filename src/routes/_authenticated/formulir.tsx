@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { FormSection } from "@/components/form-section";
 import { Button } from "@/components/ui/button";
-import { FORM_SECTIONS, REQUIRED_DOC_TYPES, type ApplicationData } from "@/lib/form-schema";
+import {
+  FORM_SECTIONS,
+  REQUIRED_DOC_TYPES,
+  isSectionComplete,
+  validateSection,
+  type ApplicationData,
+} from "@/lib/form-schema";
 import {
   fetchDocuments,
   fetchMyRoles,
