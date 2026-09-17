@@ -57,6 +57,8 @@ export const Route = createFileRoute("/_authenticated/hr")({
         property: "og:description",
         content: "Formulir lamaran dan dokumen kandidat digabung dalam satu bank data.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: HrPage,
@@ -260,9 +262,12 @@ function HrPage() {
                         Wajib {requiredDone}/{REQUIRED_DOC_TYPES.length}
                       </span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`Kelengkapan dokumen wajib ${requiredDone} dari ${REQUIRED_DOC_TYPES.length}`}>
-                      <div className="h-full rounded-full bg-admin-primary transition-all" style={{ width: `${(requiredDone / REQUIRED_DOC_TYPES.length) * 100}%` }} />
-                    </div>
+                    <progress
+                      className="h-1.5 w-full overflow-hidden rounded-full bg-muted accent-admin-primary [&::-moz-progress-bar]:bg-admin-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-admin-primary"
+                      value={requiredDone}
+                      max={REQUIRED_DOC_TYPES.length}
+                      aria-label={`Kelengkapan dokumen wajib ${requiredDone} dari ${REQUIRED_DOC_TYPES.length}`}
+                    />
                     <p className="mt-2 text-xs text-muted-foreground">Diperbarui {new Date(r.updated_at).toLocaleString("id-ID")}</p>
                   </div>
 
@@ -274,9 +279,9 @@ function HrPage() {
                           <span className="truncate">{DOC_TYPES.find((d) => d.key === doc.doc_type)?.label ?? doc.doc_type}</span>
                         </Button>
                       ))}
-                      {docs.length > 2 ? (
-                        <Button size="sm" variant="ghost" onClick={() => showPreview(r, docs[2])}>+{docs.length - 2} lainnya</Button>
-                      ) : null}
+                      {docs.slice(2, 3).map((doc) => (
+                        <Button key={`more-${doc.id}`} size="sm" variant="ghost" onClick={() => showPreview(r, doc)}>+{docs.length - 2} lainnya</Button>
+                      ))}
                       {docs.length === 0 ? <span className="text-xs text-muted-foreground">Belum ada berkas untuk dipratinjau</span> : null}
                     </div>
                     <div className="flex w-full flex-wrap gap-1.5 lg:justify-end">
