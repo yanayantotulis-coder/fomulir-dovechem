@@ -17,74 +17,92 @@ export function fileBaseName(data: ApplicationData) {
  * jadi susunan halaman PDF mengikuti formulir Word (tinggal konversi).
  */
 export async function downloadPdf(data: ApplicationData) {
-  const [{ default: JsPDF }, { default: autoTable }, { docxToBlocks }, docxBytes] =
+  const [{ default: JsPDF }, { default: html2canvas }, { renderAsync }, docxBytes] =
     await Promise.all([
       import("jspdf"),
-      import("jspdf-autotable"),
-      import("./docx-render"),
+      import("html2canvas"),
+      import("docx-preview"),
       buildDocxBytes(data),
     ]);
-  const blocks = await docxToBlocks(docxBytes);
-  const doc = new JsPDF({ unit: "pt", format: "a4" });
-  const marginX = 36;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const usable = pageWidth - marginX * 2;
-  let cursor = 48;
-  const signature = asText((data["declaration"] ?? {})["signature"]);
 
-  const ensureSpace = (needed: number) => {
-    if (cursor + needed <= pageHeight - 40) return;
-    doc.addPage();
-    cursor = 48;
-  };
+  const host = document.createElement("div");
+  host.setAttribute("aria-hidden", "true");
+  Object.assign(host.style, {
+    position: "fixed",
+    left: "-100000px",
+    top: "0",
+    width: "fit-content",
+    color: "rgb(0, 0, 0)",
+    backgroundColor: "rgb(255, 255, 255)",
+    zIndex: "-1",
+  });
+  document.body.appendChild(host);
 
-  let signaturePlaced = false;
-  for (const block of blocks) {
-    if (block.type === "paragraph") {
-      doc.setFontSize(block.bold ? 10 : 9);
-      doc.setFont("helvetica", block.bold ? "bold" : "normal");
-      const lines = doc.splitTextToSize(block.text, usable) as string[];
-      ensureSpace(lines.length * 12 + 6);
-      const x = block.align === "center" ? pageWidth / 2 : block.align === "right" ? pageWidth - marginX : marginX;
-      doc.text(lines, x, cursor, { align: block.align });
-      cursor += lines.length * 12 + 4;
-      continue;
-    }
-    if (block.type === "image") {
-      if (!signature.startsWith("data:image/png;base64,")) continue;
-      ensureSpace(80);
-      try {
-        doc.addImage(signature, "PNG", marginX, cursor, 170, 62);
-        cursor += 70;
-        signaturePlaced = true;
-      } catch {
-        signaturePlaced = true;
-      }
-      continue;
-
-    }
-    autoTable(doc, {
-      startY: cursor,
-      body: block.rows,
-      theme: "grid",
-      styles: { fontSize: 7.5, cellPadding: 3, overflow: "linebreak", valign: "top" },
-      margin: { left: marginX, right: marginX },
-      tableWidth: usable,
+  try {
+    await renderAsync(docxBytes, host, host, {
+      className: "docx-pdf",
+      inWrapper: true,
+      breakPages: true,
+      ignoreLastRenderedPageBreak: false,
+      renderHeaders: true,
+      renderFooters: true,
+      renderFootnotes: true,
+      useBase64URL: true,
     });
-    cursor = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-  }
 
-  if (!signaturePlaced && signature.startsWith("data:image/png;base64,")) {
-    ensureSpace(100);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text("Tanda Tangan Kandidat / Signature", marginX, cursor + 12);
-    doc.addImage(signature, "PNG", marginX, cursor + 18, 170, 62);
-    doc.text(`( ${asText((data["declaration"] ?? {})["signatureName"])} )`, marginX, cursor + 94);
-  }
+    await document.fonts?.ready;
+    const images = Array.from(host.querySelectorAll("img"));
+    await Promise.all(
+      images.map((image) =>
+        image.complete
+          ? Promise.resolve()
+          : new Promise<void>((resolve) => {
+              image.addEventListener("load", () => resolve(), { once: true });
+              image.addEventListener("error", () => resolve(), { once: true });
+            }),
+      ),
+    );
 
-  doc.save(`${fileBaseName(data)}.pdf`);
+    const pages = Array.from(host.querySelectorAll<HTMLElement>("section.docx-pdf"));
+    if (!pages.length) throw new Error("Halaman template Word tidak dapat dirender.");
+
+    const pdf = new JsPDF({ unit: "pt", format: "a4", compress: true });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    for (let index = 0; index < pages.length; index += 1) {
+      const page = pages[index];
+      if (!page) continue;
+      const canvas = await html2canvas(page, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false,
+      });
+      if (index > 0) pdf.addPage("a4", "portrait");
+
+      const pageRatio = canvas.width / canvas.height;
+      const pdfRatio = pdfWidth / pdfHeight;
+      const renderWidth = pageRatio > pdfRatio ? pdfWidth : pdfHeight * pageRatio;
+      const renderHeight = pageRatio > pdfRatio ? pdfWidth / pageRatio : pdfHeight;
+      const offsetX = (pdfWidth - renderWidth) / 2;
+      const offsetY = (pdfHeight - renderHeight) / 2;
+      pdf.addImage(
+        canvas.toDataURL("image/jpeg", 0.94),
+        "JPEG",
+        offsetX,
+        offsetY,
+        renderWidth,
+        renderHeight,
+        undefined,
+        "FAST",
+      );
+    }
+
+    pdf.save(`${fileBaseName(data)}.pdf`);
+  } finally {
+    host.remove();
+  }
 }
 
 
