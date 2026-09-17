@@ -164,13 +164,25 @@ export type CandidateLoginRecord = {
   updated_at: string;
 };
 
+export async function fetchStaffUserIds(): Promise<string[]> {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("user_id, role")
+    .in("role", ["admin", "hr"]);
+  return (data ?? []).map((r) => r.user_id);
+}
+
 export async function fetchAllCandidateLogins(): Promise<CandidateLoginRecord[]> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, full_name, email, phone, created_at, updated_at")
-    .order("created_at", { ascending: false });
+  const [{ data, error }, staffIds] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, full_name, email, phone, created_at, updated_at")
+      .order("created_at", { ascending: false }),
+    fetchStaffUserIds(),
+  ]);
   if (error) throw error;
-  return data ?? [];
+  const staff = new Set(staffIds);
+  return (data ?? []).filter((p) => !staff.has(p.id));
 }
 
 export type AllDocumentRecord = DocumentRecord & {
@@ -182,6 +194,15 @@ export async function fetchAllDocuments(): Promise<AllDocumentRecord[]> {
   const { data, error } = await supabase
     .from("application_documents")
     .select("id, doc_type, file_name, file_path, created_at, application_id, user_id")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function fetchAllProfiles(): Promise<CandidateLoginRecord[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, phone, created_at, updated_at")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];

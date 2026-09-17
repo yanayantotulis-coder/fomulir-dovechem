@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   fetchAllCandidateLogins,
   fetchAllDocuments,
+  fetchAllProfiles,
   fetchMyRoles,
   openDocument,
   type AllDocumentRecord,
@@ -54,11 +55,17 @@ function AdminPage() {
     enabled: isStaff,
   });
 
+  const profilesQuery = useQuery<CandidateLoginRecord[]>({
+    queryKey: ["all-profiles"],
+    queryFn: fetchAllProfiles,
+    enabled: isStaff,
+  });
+
   const nameByUser = useMemo(() => {
     const map = new Map<string, CandidateLoginRecord>();
-    for (const p of loginsQuery.data ?? []) map.set(p.id, p);
+    for (const p of profilesQuery.data ?? []) map.set(p.id, p);
     return map;
-  }, [loginsQuery.data]);
+  }, [profilesQuery.data]);
 
   const logins = useMemo(() => {
     const q = loginQuery.trim().toLowerCase();
