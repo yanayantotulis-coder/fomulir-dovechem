@@ -29,6 +29,13 @@
       "when": 1789620193421,
       "tag": "0003_require_candidate_documents_before_submission",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789620223039,
+      "tag": "0004_enforce_required_documents_on_every_submission_update",
+      "breakpoints": true
     }
   ]
 }

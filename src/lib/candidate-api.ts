@@ -150,9 +150,10 @@ export async function openDocument(filePath: string) {
 }
 
 export async function deleteDocument(doc: DocumentRecord) {
-  await supabase.storage.from("candidate-files").remove([doc.file_path]);
   const { error } = await supabase.from("application_documents").delete().eq("id", doc.id);
   if (error) throw error;
+  const { error: storageError } = await supabase.storage.from("candidate-files").remove([doc.file_path]);
+  if (storageError) throw storageError;
 }
 
 export type CandidateLoginRecord = {
