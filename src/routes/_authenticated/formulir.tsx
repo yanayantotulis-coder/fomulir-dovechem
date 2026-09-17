@@ -1,4 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -92,6 +93,12 @@ function FormPage() {
             Job Application Form 2026 — isian tersimpan per bagian.
           </p>
         </div>
+        <Button asChild variant="outline">
+          <Link to="/dashboard">
+            <ArrowLeft aria-hidden="true" />
+            Kembali ke Dashboard
+          </Link>
+        </Button>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-1.5">
