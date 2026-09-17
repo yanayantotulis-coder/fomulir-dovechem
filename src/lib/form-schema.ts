@@ -170,7 +170,7 @@ export const FORM_SECTIONS: Section[] = [
           { key: "until", label: "Sampai (Bln/Thn)" },
           { key: "gpa", label: "IPK / GPA" },
         ],
-        rows: 1,
+        rows: 4,
         presets: ["SLTA / High School", "Diploma", "S1 / Bachelor", "S2 / Master"],
         addable: true,
       },
@@ -184,7 +184,7 @@ export const FORM_SECTIONS: Section[] = [
           { key: "date", label: "Tgl/Bln/Thn" },
           { key: "notes", label: "Keterangan" },
         ],
-        rows: 4,
+        rows: 1,
         addable: true,
       },
       {
