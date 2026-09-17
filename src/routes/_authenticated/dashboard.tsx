@@ -185,20 +185,19 @@ function Dashboard() {
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {DOC_TYPES.map((type) => {
                   const files = (docsQuery.data ?? []).filter((doc) => doc.doc_type === type.key);
-                  const latest = files[files.length - 1];
                   const isUploading = upload.isPending && upload.variables?.type === type.key;
                   return (
                     <div key={type.key} className="rounded-md border border-border bg-background p-4">
                       <div className="flex min-h-10 items-start gap-3">
-                        {latest ? (
+                        {files.length > 0 ? (
                           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
                         ) : (
                           <FileText className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                         )}
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-foreground">{type.label}</p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {latest ? latest.file_name : "Belum diunggah"}
+                          <p className="text-xs text-muted-foreground">
+                            {files.length > 0 ? `${files.length} file diunggah` : "Belum diunggah"}
                           </p>
                         </div>
                       </div>
@@ -214,31 +213,42 @@ function Dashboard() {
                         }}
                       />
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Button asChild size="sm" variant={latest ? "outline" : "default"}>
-                          <label htmlFor={`upload-${type.key}`}>
+                        <Button
+                          asChild
+                          size="sm"
+                          variant={files.length > 0 ? "outline" : "default"}
+                          className={isUploading ? "pointer-events-none" : undefined}
+                        >
+                          <label htmlFor={`upload-${type.key}`} aria-disabled={isUploading}>
                             <Upload aria-hidden="true" />
-                            {isUploading ? "Mengunggah..." : latest ? "Ganti file" : "Pilih file"}
+                            {isUploading ? "Mengunggah..." : files.length > 0 ? "Tambah file" : "Pilih file"}
                           </label>
                         </Button>
-                        {latest ? (
-                          <>
+                      </div>
+                      {files.length > 0 ? (
+                        <ul className="mt-3 divide-y divide-border border-t border-border">
+                          {files.map((file) => (
+                            <li key={file.id} className="flex min-w-0 items-center justify-between gap-2 py-2">
+                              <span className="truncate text-xs text-muted-foreground" title={file.file_name}>
+                                {file.file_name}
+                              </span>
+                              <div className="flex shrink-0 gap-1">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() =>
-                                openDocument(latest.file_path).catch(() => toast.error("Gagal membuka file"))
+                                      openDocument(file.file_path).catch(() => toast.error("Gagal membuka file"))
                               }
                             >
                               Lihat
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => remove.mutate(latest)}>
+                                <Button variant="ghost" size="sm" onClick={() => remove.mutate(file)}>
                               Hapus
                             </Button>
-                          </>
-                        ) : null}
-                      </div>
-                      {files.length > 1 ? (
-                        <p className="mt-2 text-xs text-muted-foreground">{files.length} file tersimpan</p>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
                       ) : null}
                     </div>
                   );
