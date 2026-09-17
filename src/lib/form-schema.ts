@@ -122,6 +122,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "II",
     title: "FAMILY BACKGROUND",
     titleId: "LATAR BELAKANG KELUARGA",
+    note: "Wajib isi minimal baris pertama Susunan Keluarga (Ayah & Ibu). Bagian Pasangan & Anak wajib diisi jika sudah menikah / Fill at least the first row of Family Tree (Father & Mother). Spouse & Children is required if married.",
     tables: [
       {
         key: "spouseChildren",
