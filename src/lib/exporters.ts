@@ -210,32 +210,39 @@ export async function downloadDocx(data: ApplicationData) {
   );
 }
 
+/**
+ * Excel juga diambil dari berkas Word template yang sudah terisi,
+ * sehingga baris/kolomnya mengikuti isi formulir resmi.
+ */
 export async function downloadXlsx(data: ApplicationData) {
-  const XLSX = await import("xlsx");
-  const wb = XLSX.utils.book_new();
-  for (const section of FORM_SECTIONS) {
-    const { fieldRows, tables } = sectionParts(section, data);
-    const aoa: string[][] = [[`${section.no}. ${section.titleId} / ${section.title}`]];
-    if (fieldRows.length) {
+  const [XLSX, { docxToBlocks }, docxBytes] = await Promise.all([
+    import("xlsx"),
+    import("./docx-render"),
+    buildDocxBytes(data),
+  ]);
+  const blocks = await docxToBlocks(docxBytes);
+  const aoa: string[][] = [];
+  for (const block of blocks) {
+    if (block.type === "paragraph") aoa.push([block.text]);
+    else if (block.type === "image") aoa.push(["[Tanda tangan kandidat terlampir pada PDF/Word]"]);
+    else {
       aoa.push([]);
-      aoa.push(...fieldRows);
-    }
-    for (const table of tables) {
+      aoa.push(...block.rows);
       aoa.push([]);
-      aoa.push([table.title]);
-      aoa.push(table.head);
-      aoa.push(...(table.body.length ? table.body : [table.head.map(() => "-")]));
     }
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws["!cols"] = [{ wch: 40 }, { wch: 34 }, { wch: 24 }, { wch: 22 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
-    XLSX.utils.book_append_sheet(wb, ws, section.no);
   }
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(aoa.length ? aoa : [[""]]);
+  const maxCols = Math.max(1, ...aoa.map((r) => r.length));
+  ws["!cols"] = Array.from({ length: maxCols }, (_, i) => ({ wch: i === 0 ? 46 : 26 }));
+  XLSX.utils.book_append_sheet(wb, ws, "Formulir Lamaran");
   const out = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as ArrayBuffer;
   triggerDownload(
     new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
     `${fileBaseName(data)}.xlsx`,
   );
 }
+
 
 export type CandidateRow = {
   full_name: string | null;
