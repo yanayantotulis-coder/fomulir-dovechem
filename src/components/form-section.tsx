@@ -117,7 +117,15 @@ export function FormSection({ section, data, onChange, errors }: Props) {
         <h4 className="text-sm font-semibold text-foreground">
           {table.label}
           <span className="ml-1 font-normal text-muted-foreground">/ {table.labelId}</span>
+          {isTableRequired(table.key) ? (
+            <span className="ml-1 text-destructive" aria-hidden="true">
+              *
+            </span>
+          ) : (
+            <span className="ml-1 font-normal text-muted-foreground/60">(opsional)</span>
+          )}
         </h4>
+        {tableError ? <p className="mt-1 text-xs font-medium text-destructive">{tableError}</p> : null}
         <div className="mt-3 overflow-x-auto rounded-md border border-border">
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead className="bg-muted/60">
