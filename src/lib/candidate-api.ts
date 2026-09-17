@@ -142,11 +142,16 @@ export async function uploadDocument(
 }
 
 export async function openDocument(filePath: string) {
+  const signedUrl = await getDocumentPreviewUrl(filePath);
+  window.open(signedUrl, "_blank", "noopener");
+}
+
+export async function getDocumentPreviewUrl(filePath: string) {
   const { data, error } = await supabase.storage
     .from("candidate-files")
     .createSignedUrl(filePath, 60 * 10);
   if (error || !data) throw error ?? new Error("Gagal membuka dokumen");
-  window.open(data.signedUrl, "_blank", "noopener");
+  return data.signedUrl;
 }
 
 export async function deleteDocument(doc: DocumentRecord) {
