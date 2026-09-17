@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { DoverLogo } from "@/components/dover-logo";
 
 export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?: boolean }) {
   const navigate = useNavigate();
