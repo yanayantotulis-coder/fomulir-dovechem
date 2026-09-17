@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { StaffToolbar } from "@/components/staff-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -144,10 +145,13 @@ function AdminPage() {
 
   return (
     <AppShell isStaff>
-      <h1 className="font-display text-2xl font-bold text-foreground">Dashboard Admin</h1>
-      <p className="text-sm text-muted-foreground">
-        Data akun login kandidat dan data dokumen kandidat ditampilkan terpisah.
-      </p>
+      <div className="border-l-4 border-admin-accent pl-4">
+        <h1 className="font-admin-display text-2xl font-bold text-foreground">Dashboard Admin</h1>
+        <p className="font-admin text-sm text-muted-foreground">
+          Data akun login kandidat dan data dokumen kandidat ditampilkan terpisah.
+        </p>
+      </div>
+      <StaffToolbar />
 
       <Tabs defaultValue="logins" className="mt-6">
         <TabsList>

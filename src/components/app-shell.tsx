@@ -22,20 +22,11 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
           <Link to={isStaff ? "/" : "/dashboard"} className="font-display text-base font-bold text-foreground">
             PT. DOVER CHEMICAL
           </Link>
-          <nav className="flex flex-1 flex-wrap gap-1">
-            {isStaff ? (
-              <>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/admin">Dashboard Admin</Link>
-                </Button>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/hr">Bank Data HR</Link>
-                </Button>
-              </>
-            ) : (
-              <span className="px-3 text-sm font-medium text-muted-foreground">Area Kandidat</span>
-            )}
-          </nav>
+          <div className="flex flex-1">
+            <span className="px-3 text-sm font-medium text-muted-foreground">
+              {isStaff ? "Area Admin" : "Area Kandidat"}
+            </span>
+          </div>
           <Button variant="outline" size="sm" onClick={signOut}>
             Keluar
           </Button>
