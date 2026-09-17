@@ -130,11 +130,8 @@ function Landing() {
                 <Button asChild variant="ghost" className="hidden sm:inline-flex">
                   <Link to="/auth-admin">Login Admin</Link>
                 </Button>
-                <Button asChild variant="ghost" className="hidden sm:inline-flex">
-                  <Link to="/auth">Login Kandidat</Link>
-                </Button>
                 <Button asChild>
-                  <Link to="/auth">Daftar Sekarang</Link>
+                  <Link to="/auth">Login / Daftar Kandidat</Link>
                 </Button>
               </>
             )}
