@@ -178,7 +178,27 @@ export async function downloadDocx(data: ApplicationData) {
   const docPath = "word/document.xml";
   const extras = nonFormalText(data);
 
-  const xml = strFromU8(files[docPath]!).replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
+  let source = strFromU8(files[docPath]!);
+  const signature = asText((data["declaration"] ?? {})["signature"]);
+  const signatureRun =
+    /<w:r>(?:(?!<w:r>)[\s\S])*?\{\{declaration\.signature\}\}<\/w:t><\/w:r>/;
+
+  if (signature.startsWith("data:image/png;base64,")) {
+    files["word/media/tanda-tangan-kandidat.png"] = base64ToBytes(
+      signature.slice("data:image/png;base64,".length),
+    );
+    const relsPath = "word/_rels/document.xml.rels";
+    const rels = strFromU8(files[relsPath]!).replace(
+      "</Relationships>",
+      `<Relationship Id="${SIGNATURE_REL_ID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/tanda-tangan-kandidat.png"/></Relationships>`,
+    );
+    files[relsPath] = strToU8(rels);
+    source = source.replace(signatureRun, signatureDrawingXml());
+  } else {
+    source = source.replace(signatureRun, "");
+  }
+
+  const xml = source.replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
     if (path === "education.nonFormalText") return escapeXml(extras);
     const value = resolvePath(data, path);
     if (value === true) return "√";
