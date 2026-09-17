@@ -167,7 +167,7 @@ function nonFormalText(data: ApplicationData): string {
  * Unduhan Word memakai berkas template asli PT. Dover Chemical:
  * template berisi token {{...}} yang diisi dengan data kandidat dari sistem.
  */
-export async function downloadDocx(data: ApplicationData) {
+export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array> {
   const [{ unzipSync, zipSync, strFromU8, strToU8 }, templateUrl] = await Promise.all([
     import("fflate"),
     import("@/assets/formulir-dover-template.docx?url").then((m) => m.default as string),
@@ -207,7 +207,11 @@ export async function downloadDocx(data: ApplicationData) {
   });
 
   files[docPath] = strToU8(xml);
-  const zipped = zipSync(files, { level: 6 });
+  return zipSync(files, { level: 6 });
+}
+
+export async function downloadDocx(data: ApplicationData) {
+  const zipped = await buildDocxBytes(data);
   triggerDownload(
     new Blob([zipped as unknown as BlobPart], {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

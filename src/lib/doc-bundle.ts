@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { DOC_TYPES } from "./form-schema";
+import type { ApplicationData } from "./form-schema";
 import type { AllDocumentRecord, DocumentRecord } from "./candidate-api";
 
 const DOC_ORDER = DOC_TYPES.map((d) => d.key);
@@ -97,4 +98,33 @@ export async function downloadAllCandidateDocsZip(
     Object.assign(tree, await collect(group.docs, folder, { n: 0 }));
   }
   await zipAndSave(tree, `Dokumen_Kandidat_${new Date().toISOString().slice(0, 10)}.zip`);
+}
+
+/** Satu kandidat: formulir lamaran (Word) + seluruh dokumen pendukung dalam 1 berkas ZIP. */
+export async function downloadCandidateFullZip(
+  candidateName: string,
+  data: ApplicationData,
+  docs: DocumentRecord[],
+) {
+  const { buildDocxBytes } = await import("./exporters");
+  const tree: ZipTree = {
+    [`00-Formulir_Lamaran_${safe(candidateName)}.docx`]: await buildDocxBytes(data),
+  };
+  Object.assign(tree, await collect(docs, "", { n: 0 }));
+  await zipAndSave(tree, `Bank_Data_${safe(candidateName)}.zip`);
+}
+
+/** Seluruh kandidat: 1 ZIP, satu folder per kandidat berisi formulir + dokumen. */
+export async function downloadAllCandidatesFullZip(
+  groups: { name: string; data: ApplicationData; docs: DocumentRecord[] }[],
+) {
+  if (groups.length === 0) throw new Error("Belum ada data kandidat.");
+  const { buildDocxBytes } = await import("./exporters");
+  const tree: ZipTree = {};
+  for (const group of groups) {
+    const folder = `${safe(group.name)}/`;
+    tree[`${folder}00-Formulir_Lamaran_${safe(group.name)}.docx`] = await buildDocxBytes(group.data);
+    Object.assign(tree, await collect(group.docs, folder, { n: 0 }));
+  }
+  await zipAndSave(tree, `Bank_Data_Kandidat_${new Date().toISOString().slice(0, 10)}.zip`);
 }
