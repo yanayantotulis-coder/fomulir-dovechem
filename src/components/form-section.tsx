@@ -1,4 +1,13 @@
-import { LANGUAGE_LEVELS, type Section, type TableDef, type Field, type ApplicationData } from "@/lib/form-schema";
+import {
+  LANGUAGE_LEVELS,
+  isFieldRequired,
+  isTableRequired,
+  type Section,
+  type SectionErrors,
+  type TableDef,
+  type Field,
+  type ApplicationData,
+} from "@/lib/form-schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
