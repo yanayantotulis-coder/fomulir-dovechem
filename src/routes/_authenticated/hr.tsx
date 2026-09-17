@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Download,
@@ -10,11 +10,22 @@ import {
   FileSpreadsheet,
   FileText,
   Search,
+  Trash2,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StaffToolbar } from "@/components/staff-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Sheet,
   SheetContent,
@@ -23,6 +34,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  deleteApplicationWithDocuments,
   fetchAllApplications,
   fetchAllDocuments,
   fetchMyRoles,
@@ -71,6 +83,9 @@ function HrPage() {
   const [previewDoc, setPreviewDoc] = useState<AllDocumentRecord | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ApplicationRecord | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const queryClient = useQueryClient();
 
   const rolesQuery = useQuery({ queryKey: ["my-roles"], queryFn: fetchMyRoles });
   const isStaff = (rolesQuery.data ?? []).some((r) => r === "hr" || r === "admin");
@@ -118,6 +133,24 @@ function HrPage() {
       toast.error(error instanceof Error ? error.message : "Gagal membuat berkas gabungan.");
     } finally {
       setZipBusy(null);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    try {
+      await deleteApplicationWithDocuments(deleteTarget.id);
+      toast.success("Data kandidat berhasil dihapus.");
+      setDeleteTarget(null);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["all-applications"] }),
+        queryClient.invalidateQueries({ queryKey: ["all-documents"] }),
+      ]);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus data kandidat.");
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -298,6 +331,16 @@ function HrPage() {
                       <Button size="icon" variant="outline" title="Unduh formulir PDF" aria-label="Unduh formulir PDF" onClick={() => downloadPdf(r.data)}><FileText aria-hidden="true" /></Button>
                       <Button size="icon" variant="outline" title="Unduh formulir Word" aria-label="Unduh formulir Word" onClick={() => downloadDocx(r.data)}><FileText aria-hidden="true" /></Button>
                       <Button size="icon" variant="outline" title="Unduh data Excel" aria-label="Unduh data Excel" onClick={() => downloadXlsx(r.data)}><FileSpreadsheet aria-hidden="true" /></Button>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        title={`Hapus data ${candidateName}`}
+                        aria-label={`Hapus data ${candidateName}`}
+                        onClick={() => setDeleteTarget(r)}
+                      >
+                        <Trash2 aria-hidden="true" />
+                      </Button>
                     </div>
                   </div>
                 </article>
@@ -308,6 +351,29 @@ function HrPage() {
           Menampilkan {rows.length} kandidat dan {totalDocs} dokumen
         </footer>
       </section>
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open && !deleteBusy) setDeleteTarget(null); }}>
+        <AlertDialogContent className="font-admin">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-admin-display">Hapus data kandidat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Data formulir dan seluruh berkas dokumen{" "}
+              <strong>{deleteTarget?.full_name || deleteTarget?.email || "kandidat ini"}</strong>{" "}
+              akan dihapus permanen dan tidak dapat dipulihkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteBusy}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteBusy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => { e.preventDefault(); void confirmDelete(); }}
+            >
+              {deleteBusy ? "Menghapus..." : "Hapus permanen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Sheet open={previewDoc !== null} onOpenChange={(open) => { if (!open) closePreview(); }}>
         <SheetContent side="right" className="flex w-full flex-col p-0 font-admin sm:max-w-2xl">
