@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
+import { DoverLogo } from "@/components/dover-logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -115,8 +116,8 @@ function AuthPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link to="/" className="font-display text-lg font-bold text-foreground">
-            PT. DOVER CHEMICAL
+          <Link to="/" className="flex items-center">
+            <DoverLogo className="h-14 w-auto" />
           </Link>
           <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
             Portal Kandidat

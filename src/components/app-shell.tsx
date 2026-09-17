@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { DoverLogo } from "@/components/dover-logo";
 
 export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?: boolean }) {
   const navigate = useNavigate();
@@ -19,8 +20,8 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-4">
-          <Link to={isStaff ? "/" : "/dashboard"} className="font-display text-base font-bold text-foreground">
-            PT. DOVER CHEMICAL
+          <Link to={isStaff ? "/" : "/dashboard"} className="flex items-center">
+            <DoverLogo className="h-14 w-auto" />
           </Link>
           <div className="flex flex-1">
             <span className="px-3 text-sm font-medium text-muted-foreground">
