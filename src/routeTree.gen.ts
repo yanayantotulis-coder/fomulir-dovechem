@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthAdminRouteImport } from './routes/auth-admin'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFormulirRouteImport } from './routes/_authenticated/formulir'
@@ -29,6 +30,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthAdminRoute = AuthAdminRouteImport.update({
+  id: '/auth-admin',
+  path: '/auth-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -55,6 +61,7 @@ const AuthenticatedHrRoute = AuthenticatedHrRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/auth-admin': typeof AuthAdminRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/formulir': typeof AuthenticatedFormulirRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/auth-admin': typeof AuthAdminRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/formulir': typeof AuthenticatedFormulirRoute
@@ -73,6 +81,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/auth-admin': typeof AuthAdminRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/formulir': typeof AuthenticatedFormulirRoute
@@ -80,14 +89,29 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/dashboard' | '/formulir' | '/hr'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/auth-admin'
+    | '/admin'
+    | '/dashboard'
+    | '/formulir'
+    | '/hr'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/dashboard' | '/formulir' | '/hr'
+  to:
+    | '/'
+    | '/auth'
+    | '/auth-admin'
+    | '/admin'
+    | '/dashboard'
+    | '/formulir'
+    | '/hr'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/auth-admin'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/formulir'
@@ -98,6 +122,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  AuthAdminRoute: typeof AuthAdminRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -121,6 +146,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth-admin': {
+      id: '/auth-admin'
+      path: '/auth-admin'
+      fullPath: '/auth-admin'
+      preLoaderRoute: typeof AuthAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -175,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  AuthAdminRoute: AuthAdminRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
