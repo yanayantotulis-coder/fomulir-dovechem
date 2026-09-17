@@ -352,6 +352,29 @@ function HrPage() {
         </footer>
       </section>
 
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open && !deleteBusy) setDeleteTarget(null); }}>
+        <AlertDialogContent className="font-admin">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-admin-display">Hapus data kandidat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Data formulir dan seluruh berkas dokumen{" "}
+              <strong>{deleteTarget?.full_name || deleteTarget?.email || "kandidat ini"}</strong>{" "}
+              akan dihapus permanen dan tidak dapat dipulihkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteBusy}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteBusy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => { e.preventDefault(); void confirmDelete(); }}
+            >
+              {deleteBusy ? "Menghapus..." : "Hapus permanen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Sheet open={previewDoc !== null} onOpenChange={(open) => { if (!open) closePreview(); }}>
         <SheetContent side="right" className="flex w-full flex-col p-0 font-admin sm:max-w-2xl">
           <SheetHeader className="border-b border-border px-6 py-5 pr-12">
