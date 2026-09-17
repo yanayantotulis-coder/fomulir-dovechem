@@ -89,6 +89,57 @@ const checklists = [
   "Paket remunerasi & pernyataan",
 ];
 
+const sections = [
+  { no: "I", id: "Data Pribadi", en: "Personal Data" },
+  { no: "II", id: "Latar Belakang Keluarga", en: "Family Background" },
+  { no: "III", id: "Pendidikan & Kemampuan Bahasa", en: "Education & Languages" },
+  { no: "IV", id: "Organisasi & Prestasi", en: "Organization & Achievements" },
+  { no: "V", id: "Pengalaman Kerja", en: "Working Experience" },
+  { no: "VI", id: "Riwayat Kesehatan", en: "Medical Record" },
+  { no: "VII", id: "Referensi & Kontak Darurat", en: "References & Emergency" },
+  { no: "VIII", id: "Ketersediaan & Latar Belakang", en: "Availability & Background" },
+  { no: "IX", id: "Remunerasi", en: "Remuneration" },
+  { no: "X", id: "Pernyataan & Tanda Tangan", en: "Declaration & Signature" },
+];
+
+const documents = [
+  { title: "Foto 3x4", text: "Foto formal terbaru, tampak jelas, format JPG atau PNG." },
+  { title: "Curriculum Vitae", text: "CV terbaru berisi riwayat pendidikan dan pengalaman kerja." },
+  { title: "KTP", text: "Kartu identitas yang masih berlaku dan terbaca jelas." },
+  { title: "Ijazah & Transkrip", text: "Ijazah pendidikan terakhir beserta transkrip nilai." },
+];
+
+const stages = [
+  { title: "Seleksi administrasi", text: "Tim HR memeriksa kelengkapan formulir dan dokumen Anda." },
+  { title: "Wawancara HR", text: "Pembahasan riwayat kerja, motivasi, dan ekspektasi remunerasi." },
+  { title: "Wawancara user", text: "Diskusi teknis bersama calon atasan langsung di departemen." },
+  { title: "Penawaran kerja", text: "Kandidat terpilih menerima penawaran resmi dari perusahaan." },
+];
+
+const faqs = [
+  {
+    q: "Apakah formulir harus diisi sekali selesai?",
+    a: "Tidak. Setiap bagian dapat disimpan sebagai draf dan dilanjutkan kapan saja dari akun Anda.",
+  },
+  {
+    q: "Bagaimana kalau saya perlu memperbaiki isian setelah terkirim?",
+    a: "Buka kembali formulir dari akun Anda, perbaiki bagian yang salah, lalu kirim ulang ke HR.",
+  },
+  {
+    q: "Apakah tanda tangan bisa dilakukan online?",
+    a: "Ya. Pada bagian pernyataan Anda menandatangani langsung di layar, dan tanda tangan itu ikut tercetak pada berkas formulir.",
+  },
+  {
+    q: "Siapa yang bisa melihat data saya?",
+    a: "Hanya Anda sebagai pemilik akun dan tim HR PT. Dover Chemical. Kandidat lain tidak dapat melihat data Anda.",
+  },
+  {
+    q: "Apakah ada biaya dalam proses rekrutmen?",
+    a: "Tidak ada. Seluruh proses rekrutmen PT. Dover Chemical tidak dikenakan biaya apa pun.",
+  },
+];
+
+
 function Landing() {
   const [signedIn, setSignedIn] = useState(false);
 
@@ -228,6 +279,79 @@ function Landing() {
         </div>
       </section>
 
+      {/* Daftar 10 bagian formulir */}
+      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+          Isi formulir lengkap
+        </p>
+        <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
+          10 bagian yang akan Anda isi
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+          Urutan dan pertanyaannya sama dengan formulir lamaran resmi PT. Dover Chemical, dalam
+          dua bahasa (Indonesia dan Inggris).
+        </p>
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {sections.map((s) => (
+            <div
+              key={s.no}
+              className="flex items-start gap-3 rounded-lg border border-border bg-card p-4"
+            >
+              <span className="mt-0.5 flex h-7 w-9 shrink-0 items-center justify-center rounded bg-primary text-[11px] font-bold text-primary-foreground">
+                {s.no}
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{s.id}</p>
+                <p className="text-xs text-muted-foreground">{s.en}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Dokumen yang disiapkan */}
+      <section className="border-y border-border bg-card">
+        <div className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+            Sebelum mulai
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
+            Dokumen yang perlu disiapkan
+          </h2>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {documents.map((d) => (
+              <div key={d.title} className="rounded-lg border border-border bg-background p-6">
+                <FolderOpen className="h-6 w-6 text-accent" aria-hidden />
+                <h3 className="mt-4 text-base font-semibold text-foreground">{d.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{d.text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">
+            Ukuran berkas maksimal 5 MB per dokumen. Dokumen dapat diganti kapan saja selama
+            proses seleksi berjalan.
+          </p>
+        </div>
+      </section>
+
+      {/* Tahapan seleksi */}
+      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+          Setelah formulir dikirim
+        </p>
+        <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">Tahapan seleksi</h2>
+        <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stages.map((s, i) => (
+            <li key={s.title} className="rounded-lg border border-border bg-card p-6 shadow-panel">
+              <span className="text-2xl font-bold text-accent">{i + 1}</span>
+              <h3 className="mt-2 text-base font-semibold text-foreground">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+
       {/* Keunggulan */}
       <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
         <h2 className="text-2xl font-bold text-foreground md:text-3xl">
@@ -247,7 +371,28 @@ function Landing() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto max-w-4xl px-4 py-16 md:py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+            Pertanyaan umum
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
+            Hal yang sering ditanyakan kandidat
+          </h2>
+          <dl className="mt-10 divide-y divide-border border-y border-border">
+            {faqs.map((f) => (
+              <div key={f.q} className="py-5">
+                <dt className="text-sm font-semibold text-foreground md:text-base">{f.q}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
       {/* CTA akhir */}
+
       <section className="bg-hero-gradient text-surface-foreground">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-20">
           <h2 className="mx-auto max-w-2xl text-2xl font-bold md:text-4xl">
