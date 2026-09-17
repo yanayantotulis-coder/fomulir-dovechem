@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Download,
@@ -10,11 +10,22 @@ import {
   FileSpreadsheet,
   FileText,
   Search,
+  Trash2,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { StaffToolbar } from "@/components/staff-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Sheet,
   SheetContent,
@@ -23,6 +34,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  deleteApplicationWithDocuments,
   fetchAllApplications,
   fetchAllDocuments,
   fetchMyRoles,
