@@ -122,6 +122,7 @@ export const FORM_SECTIONS: Section[] = [
     no: "II",
     title: "FAMILY BACKGROUND",
     titleId: "LATAR BELAKANG KELUARGA",
+    note: "Wajib isi minimal baris pertama Susunan Keluarga (Ayah & Ibu). Bagian Pasangan & Anak wajib diisi jika sudah menikah / Fill at least the first row of Family Tree (Father & Mother). Spouse & Children is required if married.",
     tables: [
       {
         key: "spouseChildren",
@@ -562,6 +563,8 @@ const OPTIONAL_FIELDS = new Set([
 
 /** Baris tabel yang wajib lengkap. Tabel yang tidak terdaftar bersifat opsional. */
 const TABLE_RULES: Record<string, { rows: number; columns?: string[] }> = {
+  spouseChildren: { rows: 1, columns: ["name", "birthday", "education", "job"] },
+  familyTree: { rows: 1, columns: ["name", "birthday", "education", "job"] },
   formal: { rows: 1, columns: ["level", "school", "major", "from", "until"] },
   languages: { rows: 1, columns: ["language", "spoken", "written"] },
   refs: { rows: 1 },
@@ -594,7 +597,14 @@ export function validateSection(section: Section, data: ApplicationData): Sectio
     if (isEmptyValue(value)) fields[field.key] = "Wajib diisi";
   }
 
+  const maritalStatus = String(
+    ((data["personal"] ?? {}) as Record<string, unknown>)["maritalStatus"] ?? "",
+  );
+  const isSingle = maritalStatus.includes("Belum Menikah");
+
   for (const table of section.tables ?? []) {
+    // Kandidat yang belum menikah tidak memiliki pasangan/anak untuk diisi.
+    if (table.key === "spouseChildren" && isSingle) continue;
     const rule = TABLE_RULES[table.key];
     if (!rule) continue;
     const rows = (Array.isArray(values[table.key]) ? values[table.key] : []) as Record<
