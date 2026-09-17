@@ -159,15 +159,26 @@ function FormPage() {
             key={s.id}
             size="sm"
             variant={i === active ? "default" : "outline"}
-            onClick={() => setActive(i)}
+            disabled={i > maxUnlocked}
+            title={i > maxUnlocked ? "Lengkapi bagian sebelumnya terlebih dahulu" : undefined}
+            onClick={() => {
+              setShowErrors(false);
+              setActive(i);
+            }}
           >
             {s.no}. {s.title}
+            {completed[i] ? " ✓" : ""}
           </Button>
         ))}
       </div>
 
+      <p className="mt-3 text-xs text-muted-foreground">
+        Semua isian bertanda <span className="text-destructive">*</span> wajib diisi. Bagian
+        berikutnya terbuka setelah bagian ini lengkap.
+      </p>
+
       <div className="mt-6">
-        <FormSection section={section} data={data} onChange={onChange} />
+        <FormSection section={section} data={data} onChange={onChange} errors={errors} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
@@ -175,15 +186,14 @@ function FormPage() {
           <Button
             variant="outline"
             disabled={active === 0}
-            onClick={() => setActive((i) => Math.max(0, i - 1))}
+            onClick={() => {
+              setShowErrors(false);
+              setActive((i) => Math.max(0, i - 1));
+            }}
           >
             Sebelumnya
           </Button>
-          <Button
-            variant="outline"
-            disabled={active === FORM_SECTIONS.length - 1}
-            onClick={() => setActive((i) => Math.min(FORM_SECTIONS.length - 1, i + 1))}
-          >
+          <Button variant="outline" disabled={active === FORM_SECTIONS.length - 1} onClick={goNext}>
             Selanjutnya
           </Button>
         </div>
