@@ -28,7 +28,7 @@ type Props = {
   section: Section;
   data: ApplicationData;
   onChange: (sectionId: string, key: string, value: unknown) => void;
-  errors?: SectionErrors;
+  errors?: SectionErrors | undefined;
 };
 
 export function FormSection({ section, data, onChange, errors }: Props) {
