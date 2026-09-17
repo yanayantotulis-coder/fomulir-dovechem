@@ -16,6 +16,10 @@ import {
   type CandidateLoginRecord,
 } from "@/lib/candidate-api";
 import { DOC_TYPES } from "@/lib/form-schema";
+import {
+  downloadAllCandidateDocsZip,
+  downloadCandidateDocsZip,
+} from "@/lib/doc-bundle";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -89,6 +93,35 @@ function AdminPage() {
         .some((v) => String(v).toLowerCase().includes(q));
     });
   }, [docsQuery.data, docQuery, nameByUser]);
+
+  const docGroups = useMemo(() => {
+    const map = new Map<string, { name: string; email: string; docs: AllDocumentRecord[] }>();
+    for (const d of docs) {
+      const p = nameByUser.get(d.user_id);
+      const entry = map.get(d.user_id) ?? {
+        name: p?.full_name || p?.email || "Kandidat tanpa nama",
+        email: p?.email || "-",
+        docs: [],
+      };
+      entry.docs.push(d);
+      map.set(d.user_id, entry);
+    }
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [docs, nameByUser]);
+
+  const [zipBusy, setZipBusy] = useState<string | null>(null);
+
+  const runZip = async (key: string, task: () => Promise<void>) => {
+    setZipBusy(key);
+    try {
+      await task();
+      toast.success("Berkas gabungan berhasil diunduh.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal membuat berkas gabungan.");
+    } finally {
+      setZipBusy(null);
+    }
+  };
 
   if (rolesQuery.isLoading) {
     return (
@@ -171,71 +204,91 @@ function AdminPage() {
 
         <TabsContent value="docs" className="mt-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{docs.length} dokumen tersimpan</p>
-            <Input
-              className="max-w-xs"
-              placeholder="Cari kandidat atau nama file..."
-              value={docQuery}
-              onChange={(e) => setDocQuery(e.target.value)}
-            />
+            <p className="text-sm text-muted-foreground">
+              {docs.length} dokumen dari {docGroups.length} kandidat
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                className="max-w-xs"
+                placeholder="Cari kandidat atau nama file..."
+                value={docQuery}
+                onChange={(e) => setDocQuery(e.target.value)}
+              />
+              <Button
+                disabled={zipBusy !== null || docGroups.length === 0}
+                onClick={() =>
+                  runZip("all", () =>
+                    downloadAllCandidateDocsZip(
+                      docGroups.map((g) => ({ name: g.name, docs: g.docs })),
+                    ),
+                  )
+                }
+              >
+                {zipBusy === "all" ? "Menyiapkan..." : "Unduh semua (1 berkas)"}
+              </Button>
+            </div>
           </div>
-          <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card shadow-panel">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead className="bg-muted/60">
-                <tr>
-                  {["Kandidat", "Jenis dokumen", "Nama file", "Diunggah", "Aksi"].map((h) => (
-                    <th
-                      key={h}
-                      className="border-b border-border px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+
+          {docGroups.length === 0 ? (
+            <p className="mt-6 rounded-lg border border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground shadow-panel">
+              Belum ada dokumen kandidat.
+            </p>
+          ) : null}
+
+          <div className="mt-4 space-y-4">
+            {docGroups.map((group) => (
+              <div
+                key={group.name + group.email}
+                className="rounded-lg border border-border bg-card shadow-panel"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+                  <div>
+                    <p className="font-display font-semibold text-foreground">{group.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {group.email} · {group.docs.length} dokumen
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={zipBusy !== null}
+                    onClick={() =>
+                      runZip(group.name, () => downloadCandidateDocsZip(group.name, group.docs))
+                    }
+                  >
+                    {zipBusy === group.name
+                      ? "Menyiapkan..."
+                      : "Unduh dokumen kandidat (1 berkas)"}
+                  </Button>
+                </div>
+                <ul className="divide-y divide-border/60">
+                  {group.docs.map((d) => (
+                    <li
+                      key={d.id}
+                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm"
                     >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {docs.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
-                      Belum ada dokumen kandidat.
-                    </td>
-                  </tr>
-                ) : null}
-                {docs.map((d) => {
-                  const p = nameByUser.get(d.user_id);
-                  return (
-                    <tr key={d.id} className="border-b border-border/60 even:bg-muted/20">
-                      <td className="px-3 py-3">
-                        <span className="block font-medium text-foreground">
-                          {p?.full_name || "-"}
+                      <div>
+                        <span className="font-medium text-foreground">
+                          {DOC_TYPES.find((t) => t.key === d.doc_type)?.label ?? d.doc_type}
                         </span>
-                        <span className="text-xs text-muted-foreground">{p?.email || "-"}</span>
-                      </td>
-                      <td className="px-3 py-3">
-                        {DOC_TYPES.find((t) => t.key === d.doc_type)?.label ?? d.doc_type}
-                      </td>
-                      <td className="px-3 py-3">{d.file_name}</td>
-                      <td className="px-3 py-3 text-xs text-muted-foreground">
-                        {new Date(d.created_at).toLocaleString("id-ID")}
-                      </td>
-                      <td className="px-3 py-3">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            openDocument(d.file_path).catch(() =>
-                              toast.error("Gagal membuka file"),
-                            )
-                          }
-                        >
-                          Lihat
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <span className="ml-2 text-muted-foreground">{d.file_name}</span>
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          {new Date(d.created_at).toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          openDocument(d.file_path).catch(() => toast.error("Gagal membuka file"))
+                        }
+                      >
+                        Lihat
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </TabsContent>
       </Tabs>
