@@ -39,6 +39,7 @@ export async function downloadPdf(data: ApplicationData) {
     cursor = 48;
   };
 
+  let signaturePlaced = false;
   for (const block of blocks) {
     if (block.type === "paragraph") {
       doc.setFontSize(block.bold ? 10 : 9);
@@ -55,6 +56,7 @@ export async function downloadPdf(data: ApplicationData) {
       ensureSpace(80);
       doc.addImage(signature, "PNG", marginX, cursor, 170, 62);
       cursor += 70;
+      signaturePlaced = true;
       continue;
     }
     autoTable(doc, {
@@ -68,8 +70,18 @@ export async function downloadPdf(data: ApplicationData) {
     cursor = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
   }
 
+  if (!signaturePlaced && signature.startsWith("data:image/png;base64,")) {
+    ensureSpace(100);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("Tanda Tangan Kandidat / Signature", marginX, cursor + 12);
+    doc.addImage(signature, "PNG", marginX, cursor + 18, 170, 62);
+    doc.text(`( ${asText((data["declaration"] ?? {})["signatureName"])} )`, marginX, cursor + 94);
+  }
+
   doc.save(`${fileBaseName(data)}.pdf`);
 }
+
 
 
 const SIGNATURE_REL_ID = "rIdTandaTangan";
