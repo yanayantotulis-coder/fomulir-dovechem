@@ -473,6 +473,31 @@ export const LANGUAGE_LEVELS = ["Aktif / Active", "Pasif / Passive", "-"];
 
 export type ApplicationData = Record<string, Record<string, unknown>>;
 
+const SINGLE_INITIAL_ROW_TABLES = new Set([
+  "nonFormal",
+  "social",
+  "awards",
+  "jobs",
+  "supervisors",
+]);
+
+function hasRowContent(row: unknown): boolean {
+  if (!row || typeof row !== "object") return false;
+  return Object.values(row as Record<string, unknown>).some((value) => {
+    if (typeof value === "boolean") return value;
+    return String(value ?? "").trim().length > 0;
+  });
+}
+
+function normalizeSingleInitialRows(value: unknown): unknown {
+  if (!Array.isArray(value)) return value;
+  const lastFilledIndex = value.reduce(
+    (last, row, index) => (hasRowContent(row) ? index : last),
+    -1,
+  );
+  return value.slice(0, Math.max(1, lastFilledIndex + 1));
+}
+
 export function createEmptyData(): ApplicationData {
   const data: ApplicationData = {};
   for (const section of FORM_SECTIONS) {
@@ -502,6 +527,11 @@ export function mergeWithEmpty(stored: unknown): ApplicationData {
   for (const key of Object.keys(base)) {
     if (src[key] && typeof src[key] === "object") {
       base[key] = { ...base[key], ...src[key] };
+      for (const tableKey of SINGLE_INITIAL_ROW_TABLES) {
+        if (tableKey in base[key]) {
+          base[key][tableKey] = normalizeSingleInitialRows(base[key][tableKey]);
+        }
+      }
     }
   }
   return base;
