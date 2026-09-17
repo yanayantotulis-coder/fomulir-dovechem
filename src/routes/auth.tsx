@@ -137,62 +137,83 @@ function AuthPage() {
               <TabsTrigger value="signup">Daftar</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin" className="mt-5 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-in">Email</Label>
-                <Input
-                  id="email-in"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pass-in">Kata sandi</Label>
-                <Input
-                  id="pass-in"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <Button className="w-full" disabled={loading} onClick={handleSignIn}>
-                Masuk sebagai kandidat
-              </Button>
+            <TabsContent value="signin" className="mt-5">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!loading) void handleSignIn();
+                }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="email-in">Email</Label>
+                  <Input
+                    id="email-in"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pass-in">Kata sandi</Label>
+                  <Input
+                    id="pass-in"
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Memproses..." : "Masuk sebagai kandidat"}
+                </Button>
+              </form>
             </TabsContent>
 
-            <TabsContent value="signup" className="mt-5 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name-up">Nama lengkap</Label>
-                <Input
-                  id="name-up"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  maxLength={120}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email-up">Email</Label>
-                <Input
-                  id="email-up"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pass-up">Kata sandi</Label>
-                <Input
-                  id="pass-up"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <Button className="w-full" disabled={loading} onClick={handleSignUp}>
-                Buat akun
-              </Button>
+            <TabsContent value="signup" className="mt-5">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!loading) void handleSignUp();
+                }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="name-up">Nama lengkap</Label>
+                  <Input
+                    id="name-up"
+                    autoComplete="name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    maxLength={120}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email-up">Email</Label>
+                  <Input
+                    id="email-up"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pass-up">Kata sandi</Label>
+                  <Input
+                    id="pass-up"
+                    type="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Memproses..." : "Buat akun"}
+                </Button>
+              </form>
             </TabsContent>
           </Tabs>
 
