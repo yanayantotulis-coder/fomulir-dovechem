@@ -371,7 +371,28 @@ function Landing() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto max-w-4xl px-4 py-16 md:py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
+            Pertanyaan umum
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
+            Hal yang sering ditanyakan kandidat
+          </h2>
+          <dl className="mt-10 divide-y divide-border border-y border-border">
+            {faqs.map((f) => (
+              <div key={f.q} className="py-5">
+                <dt className="text-sm font-semibold text-foreground md:text-base">{f.q}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
       {/* CTA akhir */}
+
       <section className="bg-hero-gradient text-surface-foreground">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-20">
           <h2 className="mx-auto max-w-2xl text-2xl font-bold md:text-4xl">
