@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
         content:
           "Dashboard admin PT. Dover Chemical: data akun login kandidat, dengan formulir dan dokumen kandidat tergabung di Bank Data HC.",
       },
+      { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Dashboard Admin — PT. Dover Chemical" },
       {
         property: "og:description",
