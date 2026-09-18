@@ -158,13 +158,76 @@ function pngPixelSize(bytes: Uint8Array): { width: number; height: number } {
   return { width, height };
 }
 
+/**
+ * Rapikan tanda tangan: buang area kosong di sekeliling goresan lalu
+ * kembalikan PNG bersih, sehingga ukurannya di Word selalu konsisten.
+ */
+async function tidySignaturePng(dataUrl: string): Promise<Uint8Array<ArrayBuffer>> {
+  const raw = base64ToBytes(dataUrl.slice("data:image/png;base64,".length));
+  if (typeof document === "undefined") return raw;
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("gagal memuat tanda tangan"));
+      el.src = dataUrl;
+    });
+    const source = document.createElement("canvas");
+    source.width = image.naturalWidth;
+    source.height = image.naturalHeight;
+    const sctx = source.getContext("2d");
+    if (!sctx) return raw;
+    sctx.drawImage(image, 0, 0);
+    const { data } = sctx.getImageData(0, 0, source.width, source.height);
+    let minX = source.width;
+    let minY = source.height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < source.height; y += 1) {
+      for (let x = 0; x < source.width; x += 1) {
+        const i = (y * source.width + x) * 4;
+        const alpha = data[i + 3]!;
+        const luminance = (data[i]! + data[i + 1]! + data[i + 2]!) / 3;
+        if (alpha > 24 && luminance < 205) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0 || maxY < 0) return raw;
+    const pad = Math.round(Math.max(source.width, source.height) * 0.02);
+    minX = Math.max(0, minX - pad);
+    minY = Math.max(0, minY - pad);
+    maxX = Math.min(source.width - 1, maxX + pad);
+    maxY = Math.min(source.height - 1, maxY + pad);
+    const cropWidth = maxX - minX + 1;
+    const cropHeight = maxY - minY + 1;
+    const out = document.createElement("canvas");
+    out.width = cropWidth;
+    out.height = cropHeight;
+    const octx = out.getContext("2d");
+    if (!octx) return raw;
+    octx.drawImage(source, minX, minY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    const trimmed = out.toDataURL("image/png");
+    return base64ToBytes(trimmed.slice("data:image/png;base64,".length));
+  } catch {
+    return raw;
+  }
+}
+
 function signatureDrawingXml(pixels: { width: number; height: number }): string {
-  // Lebar tetap 1,7 inci, tinggi mengikuti rasio asli tanda tangan.
-  const cx = Math.round(1.7 * 914400);
-  const cy = Math.max(
-    91440,
-    Math.round((cx * pixels.height) / Math.max(1, pixels.width)),
-  );
+  // Kotak tanda tangan tetap 1,9 x 0,75 inci; gambar diskalakan agar pas di dalamnya.
+  const maxCx = Math.round(1.9 * 914400);
+  const maxCy = Math.round(0.75 * 914400);
+  const ratio = Math.max(1, pixels.height) / Math.max(1, pixels.width);
+  let cx = maxCx;
+  let cy = Math.round(maxCx * ratio);
+  if (cy > maxCy) {
+    cy = maxCy;
+    cx = Math.round(maxCy / Math.max(0.05, ratio));
+  }
   return (
     `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">` +
     `<wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/>` +
@@ -235,7 +298,7 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     /<w:r>(?:(?!<w:r>)[\s\S])*?\{\{declaration\.signature\}\}<\/w:t><\/w:r>/;
 
   if (signature.startsWith("data:image/png;base64,")) {
-    const pngBytes = base64ToBytes(signature.slice("data:image/png;base64,".length));
+    const pngBytes = await tidySignaturePng(signature);
     files["word/media/tanda-tangan-kandidat.png"] = pngBytes;
     const relsPath = "word/_rels/document.xml.rels";
     const rels = strFromU8(files[relsPath]!).replace(
