@@ -20,6 +20,7 @@ export const Route = createFileRoute("/auth-admin")({
         content:
           "Login khusus tim HC dan admin PT. Dover Chemical untuk membuka dashboard data kandidat dan dokumen.",
       },
+      { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Masuk Admin — PT. Dover Chemical" },
       {
         property: "og:description",

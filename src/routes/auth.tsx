@@ -31,7 +31,9 @@ export const Route = createFileRoute("/auth")({
         property: "og:description",
         content: "Login kandidat PT. Dover Chemical.",
       },
+      { property: "og:url", content: "https://fomulir-dovechem.lovable.app/auth" },
     ],
+    links: [{ rel: "canonical", href: "https://fomulir-dovechem.lovable.app/auth" }],
   }),
   component: AuthPage,
 });

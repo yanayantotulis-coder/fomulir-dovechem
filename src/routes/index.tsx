@@ -32,7 +32,9 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Formulir lamaran online, bank data kandidat, dan unduhan PDF/Word/Excel.",
       },
+      { property: "og:url", content: "https://fomulir-dovechem.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://fomulir-dovechem.lovable.app/" }],
   }),
   component: Landing,
 });
