@@ -22,6 +22,7 @@ import {
 } from "@/lib/candidate-api";
 
 export const Route = createFileRoute("/_authenticated/formulir")({
+  staticData: { sitemap: false },
   beforeLoad: async () => {
     const roles = await fetchMyRoles();
     if (roles.some((role) => role === "admin" || role === "hr")) {

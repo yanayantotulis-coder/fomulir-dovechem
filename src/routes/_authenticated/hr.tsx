@@ -56,6 +56,7 @@ import {
 import { DOC_TYPES, REQUIRED_DOC_TYPES } from "@/lib/form-schema";
 
 export const Route = createFileRoute("/_authenticated/hr")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Bank Data HC — PT. Dover Chemical" },

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "PT. Dover Chemical — Portal Rekrutmen Online" },
