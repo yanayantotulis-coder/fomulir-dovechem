@@ -298,7 +298,7 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     /<w:r>(?:(?!<w:r>)[\s\S])*?\{\{declaration\.signature\}\}<\/w:t><\/w:r>/;
 
   if (signature.startsWith("data:image/png;base64,")) {
-    const pngBytes = base64ToBytes(signature.slice("data:image/png;base64,".length));
+    const pngBytes = await tidySignaturePng(signature);
     files["word/media/tanda-tangan-kandidat.png"] = pngBytes;
     const relsPath = "word/_rels/document.xml.rels";
     const rels = strFromU8(files[relsPath]!).replace(
