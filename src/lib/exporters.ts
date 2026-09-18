@@ -148,19 +148,35 @@ function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-function signatureDrawingXml(): string {
-  const cx = 1828800;
-  const cy = 731520;
+/** Baca ukuran piksel PNG dari header IHDR agar rasio gambar tidak berubah. */
+function pngPixelSize(bytes: Uint8Array): { width: number; height: number } {
+  if (bytes.length < 24) return { width: 600, height: 220 };
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const width = view.getUint32(16);
+  const height = view.getUint32(20);
+  if (!width || !height) return { width: 600, height: 220 };
+  return { width, height };
+}
+
+function signatureDrawingXml(pixels: { width: number; height: number }): string {
+  // Lebar tetap 1,7 inci, tinggi mengikuti rasio asli tanda tangan.
+  const cx = Math.round(1.7 * 914400);
+  const cy = Math.max(
+    91440,
+    Math.round((cx * pixels.height) / Math.max(1, pixels.width)),
+  );
   return (
     `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">` +
-    `<wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="1001" name="TandaTangan"/>` +
+    `<wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/>` +
+    `<wp:docPr id="1001" name="TandaTangan" descr="Tanda tangan kandidat"/>` +
+    `<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>` +
     `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
     `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
     `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
-    `<pic:nvPicPr><pic:cNvPr id="1001" name="TandaTangan"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    `<pic:nvPicPr><pic:cNvPr id="1001" name="TandaTangan"/><pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr></pic:nvPicPr>` +
     `<pic:blipFill><a:blip r:embed="${SIGNATURE_REL_ID}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
-    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>` +
-    `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>` +
+    `<pic:spPr bwMode="auto"><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>` +
+    `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></pic:spPr></pic:pic>` +
     `</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`
   );
 }
@@ -219,16 +235,15 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     /<w:r>(?:(?!<w:r>)[\s\S])*?\{\{declaration\.signature\}\}<\/w:t><\/w:r>/;
 
   if (signature.startsWith("data:image/png;base64,")) {
-    files["word/media/tanda-tangan-kandidat.png"] = base64ToBytes(
-      signature.slice("data:image/png;base64,".length),
-    );
+    const pngBytes = base64ToBytes(signature.slice("data:image/png;base64,".length));
+    files["word/media/tanda-tangan-kandidat.png"] = pngBytes;
     const relsPath = "word/_rels/document.xml.rels";
     const rels = strFromU8(files[relsPath]!).replace(
       "</Relationships>",
       `<Relationship Id="${SIGNATURE_REL_ID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/tanda-tangan-kandidat.png"/></Relationships>`,
     );
     files[relsPath] = strToU8(rels);
-    source = source.replace(signatureRun, signatureDrawingXml());
+    source = source.replace(signatureRun, signatureDrawingXml(pngPixelSize(pngBytes)));
   } else {
     source = source.replace(signatureRun, "");
   }
