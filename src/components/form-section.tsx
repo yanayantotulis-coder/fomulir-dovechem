@@ -219,7 +219,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
           Bagian {section.no}
         </p>
-        <h3 className="mt-1 font-display text-xl font-bold text-foreground">{section.title}</h3>
+        <h2 className="mt-1 font-display text-xl font-bold text-foreground">{section.title}</h2>
         <p className="text-sm text-muted-foreground">{section.titleId}</p>
         {section.note ? (
           <p className="mt-3 rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
