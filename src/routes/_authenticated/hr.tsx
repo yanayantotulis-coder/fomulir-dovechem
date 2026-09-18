@@ -65,6 +65,7 @@ export const Route = createFileRoute("/_authenticated/hr")({
         content:
           "Bank data HC PT. Dover Chemical: formulir lamaran dan berkas dokumen setiap kandidat dalam satu halaman, siap diunduh sebagai satu berkas.",
       },
+      { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Bank Data HC — PT. Dover Chemical" },
       {
         property: "og:description",
