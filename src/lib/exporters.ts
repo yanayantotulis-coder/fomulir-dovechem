@@ -235,16 +235,15 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     /<w:r>(?:(?!<w:r>)[\s\S])*?\{\{declaration\.signature\}\}<\/w:t><\/w:r>/;
 
   if (signature.startsWith("data:image/png;base64,")) {
-    files["word/media/tanda-tangan-kandidat.png"] = base64ToBytes(
-      signature.slice("data:image/png;base64,".length),
-    );
+    const pngBytes = base64ToBytes(signature.slice("data:image/png;base64,".length));
+    files["word/media/tanda-tangan-kandidat.png"] = pngBytes;
     const relsPath = "word/_rels/document.xml.rels";
     const rels = strFromU8(files[relsPath]!).replace(
       "</Relationships>",
       `<Relationship Id="${SIGNATURE_REL_ID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/tanda-tangan-kandidat.png"/></Relationships>`,
     );
     files[relsPath] = strToU8(rels);
-    source = source.replace(signatureRun, signatureDrawingXml());
+    source = source.replace(signatureRun, signatureDrawingXml(pngPixelSize(pngBytes)));
   } else {
     source = source.replace(signatureRun, "");
   }
