@@ -16,6 +16,7 @@ export const credSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth")({
+  staticData: { sitemap: true },
   ssr: false,
   head: () => ({
     meta: [

@@ -10,6 +10,7 @@ import { fetchMyRoles } from "@/lib/candidate-api";
 import { credSchema } from "./auth";
 
 export const Route = createFileRoute("/auth-admin")({
+  staticData: { sitemap: false },
   ssr: false,
   head: () => ({
     meta: [
