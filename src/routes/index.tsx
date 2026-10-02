@@ -1,19 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { DoverLogo } from "@/components/dover-logo";
-import {
-  FileText,
-  ShieldCheck,
-  Download,
-  Database,
-  UserPlus,
-  ClipboardList,
-  FolderOpen,
-  ArrowRight,
-  CheckCircle2,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -41,108 +30,30 @@ export const Route = createFileRoute("/")({
 
 const steps = [
   {
-    icon: UserPlus,
-    step: "Langkah 1",
-    title: "Buat akun kandidat",
-    text: "Daftar dengan email atau akun Google dalam kurang dari satu menit.",
+    title: "Buat Akun",
+    text: "Daftarkan diri menggunakan email aktif Anda dalam kurang dari satu menit.",
   },
   {
-    icon: ClipboardList,
-    step: "Langkah 2",
-    title: "Isi formulir bertahap",
-    text: "Lengkapi 10 bagian formulir sesuai formulir resmi — tersimpan otomatis sebagai draf.",
+    title: "Lengkapi Formulir",
+    text: "Isi 10 bagian formulir resmi secara bertahap — tersimpan otomatis setiap saat.",
   },
   {
-    icon: FolderOpen,
-    step: "Langkah 3",
-    title: "Unggah dokumen",
-    text: "Foto 3x4, CV, KTP, ijazah, dan dokumen pendukung lainnya tersimpan aman.",
+    title: "Unggah Dokumen",
+    text: "Unggah foto, CV, KTP, ijazah, dan transkrip nilai langsung dari akun Anda.",
   },
   {
-    icon: Download,
-    step: "Langkah 4",
-    title: "Unduh & kirim",
-    text: "Hasil isian langsung bisa diunduh dalam format PDF, Word, atau Excel.",
+    title: "Kirim ke HC",
+    text: "Kirim lamaran Anda dan pantau statusnya melalui dashboard kandidat.",
   },
-];
-
-const highlights = [
-  {
-    icon: FileText,
-    title: "Formulir resmi lengkap",
-    text: "Seluruh isi formulir lamaran PT. Dover Chemical: data pribadi, keluarga, pendidikan, pengalaman kerja, hingga remunerasi.",
-  },
-  {
-    icon: Database,
-    title: "Bank data kandidat",
-    text: "Data Anda tersimpan rapi dan bisa diperbarui kapan saja. Tim HC dapat menelusuri seluruh kandidat dari satu tempat.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Privasi terjaga",
-    text: "Data hanya dapat diakses oleh Anda sebagai pemilik akun dan tim HC PT. Dover Chemical.",
-  },
-];
-
-const checklists = [
-  "Data pribadi & informasi keluarga",
-  "Riwayat pendidikan & kemampuan bahasa",
-  "Pengalaman organisasi & penghargaan",
-  "Pengalaman kerja & referensi",
-  "Riwayat kesehatan & kontak darurat",
-  "Paket remunerasi & pernyataan",
-];
-
-const sections = [
-  { no: "I", id: "Data Pribadi", en: "Personal Data" },
-  { no: "II", id: "Latar Belakang Keluarga", en: "Family Background" },
-  { no: "III", id: "Pendidikan & Kemampuan Bahasa", en: "Education & Languages" },
-  { no: "IV", id: "Organisasi & Prestasi", en: "Organization & Achievements" },
-  { no: "V", id: "Pengalaman Kerja", en: "Working Experience" },
-  { no: "VI", id: "Riwayat Kesehatan", en: "Medical Record" },
-  { no: "VII", id: "Referensi & Kontak Darurat", en: "References & Emergency" },
-  { no: "VIII", id: "Ketersediaan & Latar Belakang", en: "Availability & Background" },
-  { no: "IX", id: "Remunerasi", en: "Remuneration" },
-  { no: "X", id: "Pernyataan & Tanda Tangan", en: "Declaration & Signature" },
 ];
 
 const documents = [
-  { title: "Foto 3x4", text: "Foto formal terbaru, tampak jelas, format JPG atau PNG." },
-  { title: "Curriculum Vitae", text: "CV terbaru berisi riwayat pendidikan dan pengalaman kerja." },
-  { title: "KTP", text: "Kartu identitas yang masih berlaku dan terbaca jelas." },
-  { title: "Ijazah & Transkrip", text: "Ijazah pendidikan terakhir beserta transkrip nilai." },
+  "Foto 3x4",
+  "Curriculum Vitae (CV)",
+  "KTP / Identitas Diri",
+  "Ijazah Terakhir",
+  "Transkrip Nilai",
 ];
-
-const stages = [
-  { title: "Seleksi administrasi", text: "Tim HC memeriksa kelengkapan formulir dan dokumen Anda." },
-  { title: "Wawancara HC", text: "Pembahasan riwayat kerja, motivasi, dan ekspektasi remunerasi." },
-  { title: "Wawancara user", text: "Diskusi teknis bersama calon atasan langsung di departemen." },
-  { title: "Penawaran kerja", text: "Kandidat terpilih menerima penawaran resmi dari perusahaan." },
-];
-
-const faqs = [
-  {
-    q: "Apakah formulir harus diisi sekali selesai?",
-    a: "Tidak. Setiap bagian dapat disimpan sebagai draf dan dilanjutkan kapan saja dari akun Anda.",
-  },
-  {
-    q: "Bagaimana kalau saya perlu memperbaiki isian setelah terkirim?",
-    a: "Buka kembali formulir dari akun Anda, perbaiki bagian yang salah, lalu kirim ulang ke HC.",
-  },
-  {
-    q: "Apakah tanda tangan bisa dilakukan online?",
-    a: "Ya. Pada bagian pernyataan Anda menandatangani langsung di layar, dan tanda tangan itu ikut tercetak pada berkas formulir.",
-  },
-  {
-    q: "Siapa yang bisa melihat data saya?",
-    a: "Hanya Anda sebagai pemilik akun dan tim HC PT. Dover Chemical. Kandidat lain tidak dapat melihat data Anda.",
-  },
-  {
-    q: "Apakah ada biaya dalam proses rekrutmen?",
-    a: "Tidak ada. Seluruh proses rekrutmen PT. Dover Chemical tidak dikenakan biaya apa pun.",
-  },
-];
-
 
 function Landing() {
   const [signedIn, setSignedIn] = useState(false);
@@ -156,258 +67,118 @@ function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen w-full flex-col bg-white font-landing text-landing-ink">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border/70 bg-card/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            <DoverLogo className="h-14 w-auto" />
-          </div>
-          <nav className="flex items-center gap-2">
-            {signedIn ? (
-              <Button asChild>
-                <Link to="/dashboard">
-                  Buka Dashboard <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
-            ) : (
-              <>
-                <Button asChild variant="ghost" className="hidden sm:inline-flex">
-                  <Link to="/auth-admin">Login Admin</Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/auth">Login / Daftar Kandidat</Link>
-                </Button>
-              </>
-            )}
-          </nav>
+      <header className="sticky top-0 z-50 flex h-20 w-full items-center justify-between border-b border-gray-100 bg-white px-4 md:px-12">
+        <div className="flex items-center gap-3">
+          <DoverLogo className="h-12 w-auto md:h-14" />
         </div>
+        <nav className="flex items-center gap-4">
+          {signedIn ? (
+            <Link
+              to="/dashboard"
+              className="bg-dover-blue px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-dover-blue-dark active:scale-95 rounded-full"
+            >
+              Buka Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/auth-admin"
+                className="text-sm font-semibold text-gray-500 transition-colors hover:text-dover-blue"
+              >
+                Login Admin
+              </Link>
+              <Link
+                to="/auth"
+                className="rounded-full bg-dover-blue px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-dover-blue-dark active:scale-95"
+              >
+                Masuk / Daftar Kandidat
+              </Link>
+            </>
+          )}
+        </nav>
       </header>
 
-      {/* Hero */}
-      <section className="bg-hero-gradient text-surface-foreground">
-        <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-            Formulir Lamaran 2026
-          </p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">
-            Satu portal untuk seluruh proses lamaran Anda.
-          </h1>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-surface-foreground/80 md:text-lg">
-            PT. Dover Chemical kini menerima lamaran sepenuhnya online. Isi formulir resmi,
-            unggah dokumen pendukung, dan unduh hasilnya — semua dari satu akun, tanpa formulir
-            kertas.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Button asChild size="lg" variant="secondary">
-              <Link to={signedIn ? "/formulir" : "/auth"}>
-                Mulai Melamar <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="border-surface-foreground/40 bg-transparent text-surface-foreground hover:bg-surface-foreground/10"
-            >
-              <Link to="/auth">Sudah punya akun</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Langkah-langkah */}
-      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-          Cara melamar
-        </p>
-        <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
-          Empat langkah sederhana
-        </h2>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((s) => (
-            <div
-              key={s.title}
-              className="rounded-lg border border-border bg-card p-6 shadow-panel"
-            >
-              <s.icon className="h-7 w-7 text-accent" aria-hidden />
-              <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                {s.step}
-              </p>
-              <h3 className="mt-1 text-base font-semibold text-foreground">{s.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Isi formulir */}
-      <section className="border-y border-border bg-card">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:py-20">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-              Isi formulir
+      {/* Main Content: Split Screen */}
+      <main className="flex flex-1 flex-col md:flex-row">
+        {/* Left Panel: Hero CTA */}
+        <section className="relative flex w-full flex-col justify-center overflow-hidden bg-dover-blue p-8 text-white md:w-1/2 md:p-20">
+          <div className="absolute -mr-32 -mt-32 right-0 top-0 h-64 w-64 rounded-full bg-white/5" />
+          <div className="relative z-10">
+            <span className="font-landing-display mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
+              Portal Karir Resmi
+            </span>
+            <h1 className="font-landing-display mb-6 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
+              Mulai Karir Anda <br /> <span className="text-dover-sky">Bersama Kami.</span>
+            </h1>
+            <p className="mb-10 max-w-md text-base leading-relaxed text-blue-100/80 md:text-lg">
+              Bergabunglah dengan tim profesional kami dan berkontribusi dalam inovasi industri
+              kimia berkelanjutan di Indonesia.
             </p>
-            <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
-              Persis seperti formulir resmi, tanpa kertas
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-              Formulir online ini mengikuti seluruh struktur formulir lamaran resmi PT. Dover
-              Chemical. Anda bisa mengisi bertahap — setiap bagian tersimpan otomatis, jadi tidak
-              harus selesai dalam satu kali duduk.
-            </p>
-            <Button asChild className="mt-6" variant="secondary">
-              <Link to={signedIn ? "/formulir" : "/auth"}>
-                Lihat formulir <ArrowRight className="ml-1 h-4 w-4" />
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <Link
+                to={signedIn ? "/formulir" : "/auth"}
+                className="group flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 font-bold text-dover-blue shadow-lg transition-all hover:bg-[#F0F7FC]"
+              >
+                {signedIn ? "Lanjutkan Lamaran" : "Daftar Sekarang"}
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Link>
-            </Button>
+            </div>
           </div>
-          <ul className="grid gap-3 self-center sm:grid-cols-2">
-            {checklists.map((item) => (
-              <li key={item} className="flex items-start gap-2 text-sm text-foreground">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+        </section>
 
-      {/* Daftar 10 bagian formulir */}
-      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-          Isi formulir lengkap
-        </p>
-        <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
-          10 bagian yang akan Anda isi
-        </h2>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-          Urutan dan pertanyaannya sama dengan formulir lamaran resmi PT. Dover Chemical, dalam
-          dua bahasa (Indonesia dan Inggris).
-        </p>
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {sections.map((s) => (
-            <div
-              key={s.no}
-              className="flex items-start gap-3 rounded-lg border border-border bg-card p-4"
-            >
-              <span className="mt-0.5 flex h-7 w-9 shrink-0 items-center justify-center rounded bg-primary text-[11px] font-bold text-primary-foreground">
-                {s.no}
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{s.id}</p>
-                <p className="text-xs text-muted-foreground">{s.en}</p>
+        {/* Right Panel: Information */}
+        <section className="flex w-full flex-col justify-center bg-landing-surface p-8 md:w-1/2 md:p-20">
+          <div className="mx-auto w-full max-w-md space-y-10">
+            {/* Steps */}
+            <div>
+              <h2 className="font-landing-display mb-8 flex items-center gap-3 text-2xl font-bold text-dover-blue">
+                <span className="h-1 w-8 rounded-full bg-dover-blue" />
+                Langkah Pendaftaran
+              </h2>
+              <div className="space-y-6">
+                {steps.map((s, i) => (
+                  <div key={s.title} className="flex gap-4">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-dover-blue">
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h3 className="font-landing-display font-semibold text-gray-900">{s.title}</h3>
+                      <p className="text-sm text-gray-500">{s.text}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Dokumen yang disiapkan */}
-      <section className="border-y border-border bg-card">
-        <div className="mx-auto max-w-6xl px-4 py-16 md:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-            Sebelum mulai
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
-            Dokumen yang perlu disiapkan
-          </h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {documents.map((d) => (
-              <div key={d.title} className="rounded-lg border border-border bg-background p-6">
-                <FolderOpen className="h-6 w-6 text-accent" aria-hidden />
-                <h3 className="mt-4 text-base font-semibold text-foreground">{d.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{d.text}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-6 text-xs text-muted-foreground">
-            Ukuran berkas maksimal 5 MB per dokumen. Dokumen dapat diganti kapan saja selama
-            proses seleksi berjalan.
-          </p>
-        </div>
-      </section>
-
-      {/* Tahapan seleksi */}
-      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-          Setelah formulir dikirim
-        </p>
-        <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">Tahapan seleksi</h2>
-        <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {stages.map((s, i) => (
-            <li key={s.title} className="rounded-lg border border-border bg-card p-6 shadow-panel">
-              <span className="text-2xl font-bold text-accent">{i + 1}</span>
-              <h3 className="mt-2 text-base font-semibold text-foreground">{s.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-
-      {/* Keunggulan */}
-      <section className="mx-auto max-w-6xl px-4 py-16 md:py-20">
-        <h2 className="text-2xl font-bold text-foreground md:text-3xl">
-          Kenapa melamar lewat portal ini
-        </h2>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {highlights.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-lg border border-border bg-card p-6 shadow-panel"
-            >
-              <f.icon className="h-7 w-7 text-accent" aria-hidden />
-              <h3 className="mt-4 text-base font-semibold text-foreground">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
+            {/* Required Documents */}
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="font-landing-display mb-4 text-lg font-bold text-dover-blue">
+                Dokumen Wajib (PDF/JPG)
+              </h2>
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {documents.map((d) => (
+                  <li key={d} className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" aria-hidden />
+                    {d}
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-4xl px-4 py-16 md:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">
-            Pertanyaan umum
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-foreground md:text-3xl">
-            Hal yang sering ditanyakan kandidat
-          </h2>
-          <dl className="mt-10 divide-y divide-border border-y border-border">
-            {faqs.map((f) => (
-              <div key={f.q} className="py-5">
-                <dt className="text-sm font-semibold text-foreground md:text-base">{f.q}</dt>
-                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.a}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* CTA akhir */}
-
-      <section className="bg-hero-gradient text-surface-foreground">
-        <div className="mx-auto max-w-6xl px-4 py-16 text-center md:py-20">
-          <h2 className="mx-auto max-w-2xl text-2xl font-bold md:text-4xl">
-            Siap bergabung dengan PT. Dover Chemical?
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm text-surface-foreground/80 md:text-base">
-            Buat akun sekarang dan mulai isi formulir lamaran Anda hari ini.
-          </p>
-          <Button asChild size="lg" variant="secondary" className="mt-8">
-            <Link to={signedIn ? "/formulir" : "/auth"}>
-              Daftar & Isi Formulir <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </section>
+          </div>
+        </section>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 PT. Dover Chemical — Human Resources Department</p>
-          <p className="text-xs uppercase tracking-[0.2em]">Portal Rekrutmen Resmi</p>
+      <footer className="flex flex-col items-center justify-between gap-4 border-t border-gray-100 bg-white px-6 py-6 md:flex-row md:px-12">
+        <p className="text-xs text-gray-400">
+          © 2026 PT. Dover Chemical. Seluruh hak cipta dilindungi.
+        </p>
+        <div className="flex gap-6">
+          <span className="text-xs uppercase tracking-[0.2em] text-gray-500">
+            Portal Rekrutmen Resmi
+          </span>
         </div>
       </footer>
     </div>
