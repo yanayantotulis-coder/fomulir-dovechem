@@ -154,7 +154,7 @@ function Landing() {
 
             {/* Required Documents */}
             <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              <h2 className="font-display mb-4 text-lg font-bold text-dover-blue">
+              <h2 className="font-landing-display mb-4 text-lg font-bold text-dover-blue">
                 Dokumen Wajib (PDF/JPG)
               </h2>
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
