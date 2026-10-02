@@ -67,7 +67,7 @@ function Landing() {
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white font-display text-[#1F2937]">
+    <div className="flex min-h-screen w-full flex-col bg-white font-landing text-landing-ink">
       {/* Header */}
       <header className="sticky top-0 z-50 flex h-20 w-full items-center justify-between border-b border-gray-100 bg-white px-4 md:px-12">
         <div className="flex items-center gap-3">
@@ -106,11 +106,11 @@ function Landing() {
         <section className="relative flex w-full flex-col justify-center overflow-hidden bg-dover-blue p-8 text-white md:w-1/2 md:p-20">
           <div className="absolute -mr-32 -mt-32 right-0 top-0 h-64 w-64 rounded-full bg-white/5" />
           <div className="relative z-10">
-            <span className="mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
+            <span className="font-display mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
               Portal Karir Resmi
             </span>
             <h1 className="mb-6 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-              Mulai Karir Anda <br /> <span className="text-sky-300">Bersama Kami.</span>
+              Mulai Karir Anda <br /> <span className="text-dover-sky">Bersama Kami.</span>
             </h1>
             <p className="mb-10 max-w-md text-base leading-relaxed text-blue-100/80 md:text-lg">
               Bergabunglah dengan tim profesional kami dan berkontribusi dalam inovasi industri
@@ -119,7 +119,7 @@ function Landing() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 to={signedIn ? "/formulir" : "/auth"}
-                className="group flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 font-bold text-dover-blue shadow-lg transition-all hover:bg-sky-50"
+                className="group flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 font-bold text-dover-blue shadow-lg transition-all hover:bg-[#F0F7FC]"
               >
                 {signedIn ? "Lanjutkan Lamaran" : "Daftar Sekarang"}
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -129,11 +129,11 @@ function Landing() {
         </section>
 
         {/* Right Panel: Information */}
-        <section className="flex w-full flex-col justify-center bg-[#F5F7FA] p-8 md:w-1/2 md:p-20">
+        <section className="flex w-full flex-col justify-center bg-landing-surface p-8 md:w-1/2 md:p-20">
           <div className="mx-auto w-full max-w-md space-y-10">
             {/* Steps */}
             <div>
-              <h2 className="mb-8 flex items-center gap-3 text-2xl font-bold text-dover-blue">
+              <h2 className="font-display mb-8 flex items-center gap-3 text-2xl font-bold text-dover-blue">
                 <span className="h-1 w-8 rounded-full bg-dover-blue" />
                 Langkah Pendaftaran
               </h2>
@@ -154,7 +154,7 @@ function Landing() {
 
             {/* Required Documents */}
             <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              <h2 className="mb-4 text-lg font-bold text-dover-blue">
+              <h2 className="font-display mb-4 text-lg font-bold text-dover-blue">
                 Dokumen Wajib (PDF/JPG)
               </h2>
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
