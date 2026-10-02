@@ -5,8 +5,11 @@ import { AppShell } from "@/components/app-shell";
 import { StaffToolbar } from "@/components/staff-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { REQUIRED_DOC_TYPES } from "@/lib/form-schema";
 import {
   fetchAllCandidateLogins,
+  fetchAllDocuments,
+  type AllDocumentRecord,
   fetchMyRoles,
   type CandidateLoginRecord,
   guardStaffArea,
@@ -45,6 +48,38 @@ function AdminPage() {
     queryFn: fetchAllCandidateLogins,
     enabled: isStaff,
   });
+
+  const docsQuery = useQuery<AllDocumentRecord[]>({
+    queryKey: ["all-documents-progress"],
+    queryFn: fetchAllDocuments,
+    enabled: isStaff,
+  });
+
+  const total = REQUIRED_DOC_TYPES.length;
+  const progressByUser = useMemo(() => {
+    const map = new Map<string, number>();
+    const types = new Map<string, Set<string>>();
+    for (const d of docsQuery.data ?? []) {
+      if (!types.has(d.user_id)) types.set(d.user_id, new Set());
+      types.get(d.user_id)!.add(d.doc_type);
+    }
+    for (const [uid, set] of types) {
+      map.set(uid, REQUIRED_DOC_TYPES.filter((t) => set.has(t.key)).length);
+    }
+    return map;
+  }, [docsQuery.data]);
+
+  const stats = useMemo(() => {
+    const list = loginsQuery.data ?? [];
+    const counts = list.map((p) => progressByUser.get(p.id) ?? 0);
+    const complete = counts.filter((c) => c === total).length;
+    const partial = counts.filter((c) => c > 0 && c < total).length;
+    const none = counts.filter((c) => c === 0).length;
+    const avg = list.length
+      ? Math.round((counts.reduce((a, b) => a + b, 0) / (list.length * total)) * 100)
+      : 0;
+    return { complete, partial, none, avg, count: list.length };
+  }, [loginsQuery.data, progressByUser, total]);
 
   const logins = useMemo(() => {
     const q = loginQuery.trim().toLowerCase();
@@ -92,6 +127,35 @@ function AdminPage() {
       </div>
       <StaffToolbar />
 
+      <section
+        aria-label="Persentase upload dokumen kandidat"
+        className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        <div className="rounded-lg border border-border bg-card p-4 shadow-panel sm:col-span-2 lg:col-span-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Rata-rata upload dokumen wajib
+          </p>
+          <p className="mt-1 font-admin-display text-3xl font-bold text-admin-primary">{stats.avg}%</p>
+          <progress
+            className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted accent-admin-primary [&::-moz-progress-bar]:bg-admin-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-admin-primary"
+            value={stats.avg}
+            max={100}
+            aria-label={`Rata-rata upload ${stats.avg} persen`}
+          />
+        </div>
+        {[
+          { label: "Lengkap (100%)", value: stats.complete },
+          { label: "Sebagian", value: stats.partial },
+          { label: "Belum upload", value: stats.none },
+        ].map((c) => (
+          <div key={c.label} className="rounded-lg border border-border bg-card p-4 shadow-panel">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{c.label}</p>
+            <p className="mt-1 font-admin-display text-3xl font-bold text-foreground">{c.value}</p>
+            <p className="text-xs text-muted-foreground">dari {stats.count} kandidat</p>
+          </div>
+        ))}
+      </section>
+
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">{logins.length} akun kandidat</p>
         <Input
@@ -102,10 +166,10 @@ function AdminPage() {
         />
       </div>
       <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card shadow-panel">
-        <table className="w-full min-w-[720px] text-sm">
+        <table className="w-full min-w-[820px] text-sm">
           <thead className="bg-muted/60">
             <tr>
-              {["Nama", "Email login", "Telepon", "Terdaftar"].map((h) => (
+              {["Nama", "Email login", "Telepon", "Upload dokumen", "Terdaftar"].map((h) => (
                 <th
                   key={h}
                   className="border-b border-border px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
@@ -118,7 +182,7 @@ function AdminPage() {
           <tbody>
             {logins.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">
+                <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
                   Belum ada akun kandidat.
                 </td>
               </tr>
@@ -128,6 +192,28 @@ function AdminPage() {
                 <td className="px-3 py-3 font-medium text-foreground">{p.full_name || "-"}</td>
                 <td className="px-3 py-3">{p.email || "-"}</td>
                 <td className="px-3 py-3">{p.phone || "-"}</td>
+                <td className="px-3 py-3">
+                  {(() => {
+                    const done = progressByUser.get(p.id) ?? 0;
+                    const pct = Math.round((done / total) * 100);
+                    return (
+                      <div className="min-w-[140px]">
+                        <div className="mb-1 flex justify-between text-xs">
+                          <span className={pct === 100 ? "font-semibold text-admin-primary" : "font-semibold text-admin-accent"}>
+                            {pct}%
+                          </span>
+                          <span className="text-muted-foreground">{done}/{total} wajib</span>
+                        </div>
+                        <progress
+                          className="h-1.5 w-full overflow-hidden rounded-full bg-muted accent-admin-primary [&::-moz-progress-bar]:bg-admin-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-admin-primary"
+                          value={pct}
+                          max={100}
+                          aria-label={`Upload dokumen ${pct} persen`}
+                        />
+                      </div>
+                    );
+                  })()}
+                </td>
                 <td className="px-3 py-3 text-xs text-muted-foreground">
                   {new Date(p.created_at).toLocaleString("id-ID")}
                 </td>
