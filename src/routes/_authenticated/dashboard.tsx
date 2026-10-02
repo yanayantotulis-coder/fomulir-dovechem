@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronRight, ClipboardList, FileText, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -14,16 +14,12 @@ import {
   uploadDocument,
   type ApplicationRecord,
   type DocumentRecord,
+  guardCandidateArea,
 } from "@/lib/candidate-api";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   staticData: { sitemap: false },
-  beforeLoad: async () => {
-    const roles = await fetchMyRoles();
-    if (roles.some((role) => role === "admin" || role === "hr")) {
-      throw redirect({ to: "/admin" });
-    }
-  },
+  beforeLoad: () => guardCandidateArea(),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },

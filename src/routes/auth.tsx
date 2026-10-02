@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
+import { fetchMyRoles, isStaffRole } from "@/lib/candidate-api";
 import { DoverLogo } from "@/components/dover-logo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,8 +47,14 @@ function AuthPage() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) return;
+      const roles = await fetchMyRoles();
+      if (isStaffRole(roles)) {
+        await supabase.auth.signOut();
+        return;
+      }
+      navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
 
@@ -65,9 +72,16 @@ function AuthPage() {
     if (!creds) return;
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword(creds);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error("Gagal masuk: email atau kata sandi salah");
+      return;
+    }
+    const roles = await fetchMyRoles();
+    setLoading(false);
+    if (isStaffRole(roles)) {
+      await supabase.auth.signOut();
+      toast.error("Akun admin/HC tidak bisa masuk di portal kandidat. Gunakan portal admin.");
       return;
     }
     toast.success("Berhasil masuk");

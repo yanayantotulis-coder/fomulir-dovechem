@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,16 +19,12 @@ import {
   fetchOrCreateMyApplication,
   saveApplication,
   type ApplicationRecord,
+  guardCandidateArea,
 } from "@/lib/candidate-api";
 
 export const Route = createFileRoute("/_authenticated/formulir")({
   staticData: { sitemap: false },
-  beforeLoad: async () => {
-    const roles = await fetchMyRoles();
-    if (roles.some((role) => role === "admin" || role === "hr")) {
-      throw redirect({ to: "/admin" });
-    }
-  },
+  beforeLoad: () => guardCandidateArea(),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
