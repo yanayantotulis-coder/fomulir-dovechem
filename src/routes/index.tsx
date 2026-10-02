@@ -106,10 +106,10 @@ function Landing() {
         <section className="relative flex w-full flex-col justify-center overflow-hidden bg-dover-blue p-8 text-white md:w-1/2 md:p-20">
           <div className="absolute -mr-32 -mt-32 right-0 top-0 h-64 w-64 rounded-full bg-white/5" />
           <div className="relative z-10">
-            <span className="font-display mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
+            <span className="font-landing-display mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
               Portal Karir Resmi
             </span>
-            <h1 className="mb-6 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
+            <h1 className="font-landing-display mb-6 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
               Mulai Karir Anda <br /> <span className="text-dover-sky">Bersama Kami.</span>
             </h1>
             <p className="mb-10 max-w-md text-base leading-relaxed text-blue-100/80 md:text-lg">
@@ -133,7 +133,7 @@ function Landing() {
           <div className="mx-auto w-full max-w-md space-y-10">
             {/* Steps */}
             <div>
-              <h2 className="font-display mb-8 flex items-center gap-3 text-2xl font-bold text-dover-blue">
+              <h2 className="font-landing-display mb-8 flex items-center gap-3 text-2xl font-bold text-dover-blue">
                 <span className="h-1 w-8 rounded-full bg-dover-blue" />
                 Langkah Pendaftaran
               </h2>
@@ -144,7 +144,7 @@ function Landing() {
                       {i + 1}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{s.title}</h3>
+                      <h3 className="font-landing-display font-semibold text-gray-900">{s.title}</h3>
                       <p className="text-sm text-gray-500">{s.text}</p>
                     </div>
                   </div>
