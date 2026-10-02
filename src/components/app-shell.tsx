@@ -13,7 +13,7 @@ export function AppShell({ children, isStaff }: { children: ReactNode; isStaff?:
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: isStaff ? "/auth-admin" : "/auth", replace: true });
   };
 
   return (

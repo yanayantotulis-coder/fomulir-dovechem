@@ -9,10 +9,12 @@ import {
   fetchAllCandidateLogins,
   fetchMyRoles,
   type CandidateLoginRecord,
+  guardStaffArea,
 } from "@/lib/candidate-api";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   staticData: { sitemap: false },
+  beforeLoad: () => guardStaffArea(),
   head: () => ({
     meta: [
       { title: "Dashboard Admin — PT. Dover Chemical" },

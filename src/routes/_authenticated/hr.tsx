@@ -42,6 +42,7 @@ import {
   openDocument,
   type AllDocumentRecord,
   type ApplicationRecord,
+  guardStaffArea,
 } from "@/lib/candidate-api";
 import {
   downloadCandidateBankXlsx,
@@ -57,6 +58,7 @@ import { DOC_TYPES, REQUIRED_DOC_TYPES } from "@/lib/form-schema";
 
 export const Route = createFileRoute("/_authenticated/hr")({
   staticData: { sitemap: false },
+  beforeLoad: () => guardStaffArea(),
   head: () => ({
     meta: [
       { title: "Bank Data HC — PT. Dover Chemical" },

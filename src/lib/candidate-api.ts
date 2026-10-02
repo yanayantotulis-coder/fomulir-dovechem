@@ -235,3 +235,27 @@ export async function fetchAllProfiles(): Promise<CandidateLoginRecord[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+const isStaffRole = (roles: string[]) => roles.some((r) => r === "admin" || r === "hr");
+
+/** Guard area kandidat: akun admin/HC dikeluarkan dan diarahkan ke login kandidat. */
+export async function guardCandidateArea() {
+  const { redirect } = await import("@tanstack/react-router");
+  const roles = await fetchMyRoles();
+  if (isStaffRole(roles)) {
+    await supabase.auth.signOut();
+    throw redirect({ to: "/auth" });
+  }
+}
+
+/** Guard area admin: akun kandidat dikeluarkan dan diarahkan ke login admin. */
+export async function guardStaffArea() {
+  const { redirect } = await import("@tanstack/react-router");
+  const roles = await fetchMyRoles();
+  if (!isStaffRole(roles)) {
+    await supabase.auth.signOut();
+    throw redirect({ to: "/auth-admin" });
+  }
+}
+
+export { isStaffRole };
