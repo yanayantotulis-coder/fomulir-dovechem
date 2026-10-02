@@ -68,6 +68,13 @@
   --color-admin-accent: var(--admin-accent);
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
+  --color-dover-blue: var(--dover-blue);
+  --color-dover-blue-dark: var(--dover-blue-dark);
+  --color-dover-sky: var(--dover-sky);
+  --color-landing-surface: var(--landing-surface);
+  --color-landing-ink: var(--landing-ink);
+  --font-landing-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-landing: "Figtree", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
