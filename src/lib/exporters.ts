@@ -291,7 +291,6 @@ function tidyLayoutXml(xml: string): string {
     new RegExp(`((?:${emptyPara}){2,})(?=<w:p(?:\\s[^>]*)?>(?:(?!</w:p>)[\\s\\S])*?Signature and name)`),
     (run) => run.match(new RegExp(emptyPara))?.[0] ?? "",
   );
-  out = out.replace(/<w:tblPr>(?![\s\S]*?<w:tblLayout)/g, '<w:tblPr><w:tblLayout w:type="fixed"/>');
   out = out.replace(/<w:tcPr>((?:(?!<\/w:tcPr>)[\s\S])*?)<\/w:tcPr>/g, (all, inner: string) =>
     inner.includes("<w:vAlign") ? all : `<w:tcPr>${inner}<w:vAlign w:val="center"/></w:tcPr>`,
   );
