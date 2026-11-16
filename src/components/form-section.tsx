@@ -160,7 +160,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {table.columns.map((col, colIndex) => {
-                    if (presetLabel && colIndex === 0) return null;
+                    if (presetLabel && colIndex === 0 && table.key !== "formal") return null;
                     const id = `${section.id}-${table.key}-${rowIndex}-${col.key}`;
                     const label = `${table.labelId}, baris ${rowIndex + 1}, ${col.label}`;
                     const updateCell = (value: unknown) =>

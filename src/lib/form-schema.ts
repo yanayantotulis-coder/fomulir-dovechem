@@ -168,7 +168,7 @@ export const FORM_SECTIONS: Section[] = [
         label: "Formal Education",
         labelId: "Pendidikan Formal",
         columns: [
-          { key: "level", label: "Tingkat / Level", type: "select", options: HIGHER_EDU_LEVELS },
+          { key: "level", label: "Tingkat / Level", type: "select", options: [...SCHOOL_LEVELS, ...HIGHER_EDU_LEVELS] },
           { key: "school", label: "Sekolah / Perguruan Tinggi" },
           { key: "major", label: "Jurusan / Major" },
           { key: "from", label: "Dari (Bln/Thn)" },
