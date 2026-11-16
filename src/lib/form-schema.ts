@@ -553,9 +553,6 @@ export function mergeWithEmpty(stored: unknown): ApplicationData {
       const level = String(row["level"] ?? "");
       if (SCHOOL_LEVELS.includes(level)) {
         row["major"] = "-";
-      } else if (String(row["major"] ?? "").trim() === "-") {
-        // strip lama dari jenjang SD/SMP/SMA tidak boleh menempel di jenjang tinggi
-        row["major"] = "";
       }
     }
   }
@@ -616,6 +613,10 @@ export function validateSection(section: Section, data: ApplicationData): Sectio
     const value = values[field.key];
     if (field.type === "checkbox") {
       if (value !== true) fields[field.key] = "Wajib dicentang";
+      continue;
+    }
+    if (field.type === "signature") {
+      if (!String(value ?? "").startsWith("data:image/")) fields[field.key] = "Tanda tangan wajib diisi";
       continue;
     }
     if (isEmptyValue(value)) fields[field.key] = "Wajib diisi";
