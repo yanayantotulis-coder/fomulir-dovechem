@@ -164,7 +164,23 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                     const id = `${section.id}-${table.key}-${rowIndex}-${col.key}`;
                     const label = `${table.labelId}, baris ${rowIndex + 1}, ${col.label}`;
                     const updateCell = (value: unknown) =>
-                      setTableRows(table, rows.map((r, i) => (i === rowIndex ? { ...r, [col.key]: value } : r)));
+                      setTableRows(
+                        table,
+                        rows.map((r, i) => {
+                          if (i !== rowIndex) return r;
+                          const next = { ...r, [col.key]: value };
+                          // Tingkat SD/SMP/SMA mengisi jurusan dengan "-", tingkat tinggi mengosongkannya lagi.
+                          if (table.key === "formal" && col.key === "level") {
+                            const level = String(value ?? "");
+                            if (SCHOOL_LEVELS.includes(level)) {
+                              if (String(next.major ?? "").trim() === "") next.major = "-";
+                            } else if (String(next.major ?? "") === "-") {
+                              next.major = "";
+                            }
+                          }
+                          return next;
+                        }),
+                      );
                     const selectOptions = col.options ?? LANGUAGE_LEVELS;
                     const currentSelect = String(row[col.key] ?? "");
                     const selectList =
