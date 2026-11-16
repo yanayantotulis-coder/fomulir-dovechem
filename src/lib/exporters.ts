@@ -315,7 +315,11 @@ function expandTemplateRows(xml: string, data: ApplicationData): string {
         const end = (rows[endIdx].index ?? 0) + rows[endIdx][0].length;
         let clone = out.slice(start, end).replaceAll(`{{${prefix}.${max}.`, `{{${prefix}.${next}.`);
         // Nomor urut yang tercetak di template (mis. "2. Company name") ikut dinaikkan.
-        clone = clone.replace(/(<w:t(?:\s[^>]*)?>)(\d+)(\.)/, `$1${next + 1}$3`);
+        clone = clone.replace(
+          /(<w:t(?:\s[^>]*)?>)(\d+)([\s.]*)(<\/w:t>)/,
+          (_m, open: string, _num: string, rest: string, close: string) =>
+            `${open}${next + 1}${rest}${close}`,
+        );
         out = out.slice(0, end) + clone + out.slice(end);
         max = next;
       }
@@ -377,7 +381,6 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
   const xml = expandTemplateRows(source, data).replace(
     /\{\{([a-zA-Z0-9._]+)\}\}/g,
     (_all, path: string) => {
-      if (path === "education.nonFormalText") return escapeXml(extras);
       const value = resolvePath(data, path);
       // Tingkat SD/SMP/SMA tidak punya jurusan: selnya tetap terisi strip.
       if (/^education\.formal\.\d+\.major$/.test(path)) {
