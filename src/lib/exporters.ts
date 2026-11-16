@@ -266,15 +266,71 @@ function resolvePath(data: ApplicationData, path: string): unknown {
   return current;
 }
 
+/** Baris non-formal yang punya tempat sendiri di tabel template (3 baris). */
+const NON_FORMAL_TEMPLATE_ROWS = 3;
+
+/**
+ * Isi tabel Pendidikan Non Formal. Tiga entri pertama sudah punya baris sendiri
+ * di template, jadi cell ini hanya menampung entri selebihnya.
+ */
 function nonFormalText(data: ApplicationData): string {
   const rows = (data["education"]?.["nonFormal"] ?? []) as Record<string, unknown>[];
   return rows
+    .slice(NON_FORMAL_TEMPLATE_ROWS)
     .filter((r) => asText(r["name"]).trim() !== "")
     .map(
       (r) =>
         `${asText(r["name"])} - ${asText(r["heldBy"])} (${asText(r["date"])}) ${asText(r["notes"])}`.trim(),
     )
     .join("\n");
+}
+
+/** Tabel yang bloknya terdiri dari beberapa baris (satu entri = beberapa baris). */
+const BLOCK_END_KEY: Record<string, string> = { "work.jobs": "reasonLeave" };
+
+const escapeRe = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Template hanya punya jumlah baris tetap. Kalau kandidat menambah baris lebih
+ * banyak, baris (atau blok baris) terakhir template diduplikasi supaya semua
+ * isian ikut masuk ke berkas Word.
+ */
+function expandTemplateRows(xml: string, data: ApplicationData): string {
+  let out = xml;
+  for (const [sectionId, sectionData] of Object.entries(data)) {
+    if (!sectionData || typeof sectionData !== "object") continue;
+    for (const [tableKey, value] of Object.entries(sectionData as Record<string, unknown>)) {
+      if (!Array.isArray(value)) continue;
+      const prefix = `${sectionId}.${tableKey}`;
+      let max = -1;
+      for (const m of out.matchAll(new RegExp(`\\{\\{${escapeRe(prefix)}\\.(\\d+)\\.`, "g"))) {
+        max = Math.max(max, Number(m[1]));
+      }
+      if (max < 0) continue;
+      while (max + 1 < value.length) {
+        const next = max + 1;
+        const rows = Array.from(out.matchAll(/<w:tr\b[\s\S]*?<\/w:tr>/g));
+        const startIdx = rows.findIndex((m) => m[0].includes(`{{${prefix}.${max}.`));
+        if (startIdx === -1) break;
+        let endIdx = startIdx;
+        const endKey = BLOCK_END_KEY[prefix];
+        if (endKey) {
+          const found = rows.findIndex(
+            (m, i) => i >= startIdx && m[0].includes(`{{${prefix}.${max}.${endKey}}}`),
+          );
+          if (found !== -1) endIdx = found;
+        }
+        const start = rows[startIdx].index ?? 0;
+        const end = (rows[endIdx].index ?? 0) + rows[endIdx][0].length;
+        let clone = out.slice(start, end).replaceAll(`{{${prefix}.${max}.`, `{{${prefix}.${next}.`);
+        // Nomor urut yang tercetak di template (mis. "2. Company name") ikut dinaikkan.
+        clone = clone.replace(/(<w:t(?:\s[^>]*)?>)(\d+)(\.)/, `$1${next + 1}$3`);
+        out = out.slice(0, end) + clone + out.slice(end);
+        max = next;
+      }
+    }
+  }
+  return out;
 }
 
 /**
