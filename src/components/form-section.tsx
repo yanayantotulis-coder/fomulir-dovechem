@@ -165,6 +165,12 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                     const label = `${table.labelId}, baris ${rowIndex + 1}, ${col.label}`;
                     const updateCell = (value: unknown) =>
                       setTableRows(table, rows.map((r, i) => (i === rowIndex ? { ...r, [col.key]: value } : r)));
+                    const selectOptions = col.options ?? LANGUAGE_LEVELS;
+                    const currentSelect = String(row[col.key] ?? "");
+                    const selectList =
+                      currentSelect && !selectOptions.includes(currentSelect)
+                        ? [...selectOptions, currentSelect]
+                        : selectOptions;
                     return (
                       <div key={col.key} className={col.type === "textarea" ? "sm:col-span-2 lg:col-span-3" : ""}>
                         <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
@@ -179,7 +185,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                         ) : col.type === "select" ? (
                           <Select value={String(row[col.key] ?? "")} onValueChange={updateCell}>
                             <SelectTrigger id={id} aria-label={label} className="bg-background"><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                            <SelectContent>{(col.options ?? LANGUAGE_LEVELS).map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                            <SelectContent>{selectList.map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
                           </Select>
                         ) : col.type === "textarea" ? (
                           <Textarea id={id} aria-label={label} rows={3} className="bg-background" value={String(row[col.key] ?? "")} onChange={(e) => updateCell(e.target.value)} />

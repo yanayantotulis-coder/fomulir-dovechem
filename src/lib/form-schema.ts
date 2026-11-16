@@ -21,6 +21,11 @@ export type TableColumn = { key: string; label: string; type?: FieldType; width?
 /** Jenjang sekolah dasar–menengah: jurusan otomatis diisi "-". */
 export const SCHOOL_LEVELS = ["SD / Elementary School", "SMP / Junior High School", "SMA / SMK / Senior High School"];
 export const HIGHER_EDU_LEVELS = ["D1", "D2", "D3", "D4", "S1 / Bachelor", "S2 / Master", "S3 / Doctoral"];
+/** Nama tingkat lama dari draf lama, dipetakan ke pilihan tingkat terbaru. */
+export const LEGACY_EDU_LEVELS: Record<string, string> = {
+  "SLTP / Junior High School": "SMP / Junior High School",
+  "SLTA / High School": "SMA / SMK / Senior High School",
+};
 
 export type TableDef = {
   key: string;
@@ -168,7 +173,7 @@ export const FORM_SECTIONS: Section[] = [
         label: "Formal Education",
         labelId: "Pendidikan Formal",
         columns: [
-          { key: "level", label: "Tingkat / Level", type: "select", options: [...SCHOOL_LEVELS, ...HIGHER_EDU_LEVELS] },
+          { key: "level", label: "Tingkat / Level", type: "select", options: [...SCHOOL_LEVELS, ...HIGHER_EDU_LEVELS, "Diploma"] },
           { key: "school", label: "Sekolah / Perguruan Tinggi" },
           { key: "major", label: "Jurusan / Major" },
           { key: "from", label: "Dari (Bln/Thn)" },
@@ -543,6 +548,8 @@ export function mergeWithEmpty(stored: unknown): ApplicationData {
   const formal = (base["education"] ?? {})["formal"];
   if (Array.isArray(formal)) {
     for (const row of formal as Record<string, unknown>[]) {
+      const mapped = LEGACY_EDU_LEVELS[String(row["level"] ?? "")];
+      if (mapped) row["level"] = mapped;
       if (SCHOOL_LEVELS.includes(String(row["level"] ?? ""))) row["major"] = "-";
     }
   }
