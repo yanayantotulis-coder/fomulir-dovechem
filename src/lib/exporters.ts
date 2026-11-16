@@ -318,11 +318,17 @@ function expandTemplateRows(xml: string, data: ApplicationData): string {
         const end = (lastRow.index ?? 0) + lastRow[0].length;
         let clone = out.slice(start, end).replaceAll(`{{${prefix}.${max}.`, `{{${prefix}.${next}.`);
         // Nomor urut yang tercetak di template (mis. "2. Company name") ikut dinaikkan.
-        clone = clone.replace(
-          /(<w:t(?:\s[^>]*)?>)(\d+)([\s.]*)(<\/w:t>)/,
-          (_m, open: string, _num: string, rest: string, close: string) =>
-            `${open}${next + 1}${rest}${close}`,
+        const numbered = clone.replace(
+          /(<w:t(?:\s[^>]*)?>)(\d+)(\.)/,
+          (_m, open: string, _num: string, dot: string) => `${open}${next + 1}${dot}`,
         );
+        clone =
+          numbered !== clone
+            ? numbered
+            : clone.replace(
+                /(<w:t(?:\s[^>]*)?>)(\d+)(<\/w:t>)/,
+                (_m, open: string, _num: string, close: string) => `${open}${next + 1}${close}`,
+              );
         out = out.slice(0, end) + clone + out.slice(end);
         max = next;
       }
