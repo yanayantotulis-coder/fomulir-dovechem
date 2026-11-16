@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { createEmptyData, FORM_SECTIONS, mergeWithEmpty, validateSection } from "./form-schema";
 
