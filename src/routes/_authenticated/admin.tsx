@@ -112,17 +112,12 @@ function AdminPage() {
 
   return (
     <AppShell isStaff>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="border-l-4 border-admin-accent pl-4">
-          <h1 className="font-admin-display text-2xl font-bold text-foreground">Dashboard Admin</h1>
-          <p className="font-admin text-sm text-muted-foreground">
-            Data akun login kandidat. Formulir lamaran dan berkas dokumen kini tergabung di Bank
-            Data HC.
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link to="/hr">Buka Bank Data HC</Link>
-        </Button>
+      <div className="border-l-4 border-admin-accent pl-4">
+        <h1 className="font-admin-display text-2xl font-bold text-foreground">Dashboard Admin</h1>
+        <p className="font-admin text-sm text-muted-foreground">
+          Data akun login kandidat. Formulir lamaran dan berkas dokumen kini tergabung di Bank
+          Data HC.
+        </p>
       </div>
       <StaffToolbar />
 
