@@ -10,4 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep unavailable-answer values as literal hyphens through form validation and draft normalization; date controls expose an explicit unavailable option so the same value can be saved without invalid native date input.
-- Use Bun's built-in test runner for form-schema rules so focused validation tests need no additional test dependency.
+- Use node:test assertions executed with Bun for form-schema rules to avoid global runtime type conflicts and additional test dependencies.

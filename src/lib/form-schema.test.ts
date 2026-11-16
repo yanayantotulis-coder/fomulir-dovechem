@@ -1,5 +1,5 @@
-/// <reference types="bun" />
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import { strict as assert } from "node:assert";
 import { createEmptyData, FORM_SECTIONS, mergeWithEmpty, validateSection } from "./form-schema";
 
 describe("Jawaban tidak tersedia", () => {
@@ -7,9 +7,9 @@ describe("Jawaban tidak tersedia", () => {
     const section = FORM_SECTIONS.find((item) => item.id === "work");
     if (!section) throw new Error("Missing work section");
     const data = createEmptyData();
-    expect(validateSection(section, data).fields["innovation"]).toBe("Wajib diisi");
+    assert.equal(validateSection(section, data).fields["innovation"], "Wajib diisi");
     data["work"] = { innovation: "-", orgChart: "-" };
-    expect(validateSection(section, data).fields).toEqual({});
+    assert.deepEqual(validateSection(section, data).fields, {});
   });
 
   test("strip diterima pada seluruh kolom baris keluarga wajib", () => {
@@ -17,12 +17,12 @@ describe("Jawaban tidak tersedia", () => {
     if (!section) throw new Error("Missing family section");
     const data = createEmptyData();
     data["family"] = { familyTree: [{ name: "-", birthday: "-", education: "-", job: "-" }], spouseChildren: [{ name: "-", birthday: "-", education: "-", job: "-" }] };
-    expect(validateSection(section, data).tables).toEqual({});
+    assert.deepEqual(validateSection(section, data).tables, {});
   });
 
   test("jurusan perguruan tinggi berupa strip dipertahankan setelah dimuat kembali", () => {
     const data = mergeWithEmpty({ education: { formal: [{ level: "D3", major: "-" }] } });
-    expect(data["education"]?.["formal"]).toEqual([{ level: "D3", major: "-" }]);
+    assert.deepEqual(data["education"]?.["formal"], [{ level: "D3", major: "-" }]);
   });
 
   test("strip tidak menggantikan tanda tangan atau persetujuan", () => {
@@ -30,6 +30,6 @@ describe("Jawaban tidak tersedia", () => {
     if (!section) throw new Error("Missing declaration section");
     const data = createEmptyData();
     data["declaration"] = { city: "-", date: "-", signatureName: "-", signature: "-", agree: "-" };
-    expect(validateSection(section, data).fields).toEqual({ signature: "Tanda tangan wajib diisi", agree: "Wajib dicentang" });
+    assert.deepEqual(validateSection(section, data).fields, { signature: "Tanda tangan wajib diisi", agree: "Wajib dicentang" });
   });
 });
