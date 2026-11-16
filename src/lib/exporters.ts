@@ -281,6 +281,23 @@ function nonFormalText(data: ApplicationData): string {
  * Unduhan Word memakai berkas template asli PT. Dover Chemical:
  * template berisi token {{...}} yang diisi dengan data kandidat dari sistem.
  */
+/**
+ * Merapikan tata letak hasil isian: jarak tanggal ke tanda tangan dirapatkan,
+ * tabel memakai lebar kolom tetap dan isi sel rata tengah vertikal.
+ */
+function tidyLayoutXml(xml: string): string {
+  const emptyPara = String.raw`<w:p(?:\s[^>]*)?>(?:(?!<w:t[\s>])(?!</w:p>)[\s\S])*</w:p>`;
+  let out = xml.replace(
+    new RegExp(`((?:${emptyPara}){2,})(?=<w:p(?:\\s[^>]*)?>(?:(?!</w:p>)[\\s\\S])*?Signature and name)`),
+    (run) => run.match(new RegExp(emptyPara))?.[0] ?? "",
+  );
+  out = out.replace(/<w:tblPr>(?![\s\S]*?<w:tblLayout)/g, '<w:tblPr><w:tblLayout w:type="fixed"/>');
+  out = out.replace(/<w:tcPr>((?:(?!<\/w:tcPr>)[\s\S])*?)<\/w:tcPr>/g, (all, inner: string) =>
+    inner.includes("<w:vAlign") ? all : `<w:tcPr>${inner}<w:vAlign w:val="center"/></w:tcPr>`,
+  );
+  return out;
+}
+
 export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array> {
   const [{ unzipSync, zipSync, strFromU8, strToU8 }, templateUrl] = await Promise.all([
     import("fflate"),
@@ -319,7 +336,7 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     return escapeXml(String(value));
   });
 
-  files[docPath] = strToU8(xml);
+  files[docPath] = strToU8(tidyLayoutXml(xml));
   return zipSync(files, { level: 6 });
 }
 
