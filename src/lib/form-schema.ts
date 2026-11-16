@@ -180,8 +180,8 @@ export const FORM_SECTIONS: Section[] = [
           { key: "until", label: "Sampai (Bln/Thn)" },
           { key: "gpa", label: "IPK / GPA" },
         ],
-        rows: 6,
-        presets: [...SCHOOL_LEVELS, "", "", ""],
+        rows: 4,
+        presets: [...SCHOOL_LEVELS, ""],
         addable: true,
       },
       {
@@ -366,6 +366,7 @@ export const FORM_SECTIONS: Section[] = [
           { key: "phone", label: "No Telepon" },
         ],
         rows: 2,
+        addable: true,
       },
     ],
   },

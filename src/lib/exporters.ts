@@ -1,4 +1,4 @@
-import { SCHOOL_LEVELS, type ApplicationData } from "./form-schema";
+import { type ApplicationData } from "./form-schema";
 
 const asText = (value: unknown): string => {
   if (value === true) return "Ya";
@@ -266,76 +266,15 @@ function resolvePath(data: ApplicationData, path: string): unknown {
   return current;
 }
 
-/** Tabel yang bloknya terdiri dari beberapa baris (satu entri = beberapa baris). */
-const BLOCK_END_KEY: Record<string, string> = {
-  "work.jobs": "reasonLeave",
-  "references.refs": "relation",
-};
-
-/**
- * Tabel yang tidak bisa ditambah baris: kolomnya sudah melebar untuk beberapa
- * orang (kontak darurat), jadi menambah entri tidak punya tempat di formulir.
- */
-const NO_CLONE = new Set(["references.emergency"]);
-
-const escapeRe = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-/**
- * Template hanya punya jumlah baris tetap. Kalau kandidat menambah baris lebih
- * banyak, baris (atau blok baris) terakhir template diduplikasi supaya semua
- * isian ikut masuk ke berkas Word.
- */
-function expandTemplateRows(xml: string, data: ApplicationData): string {
-  let out = xml;
-  for (const [sectionId, sectionData] of Object.entries(data)) {
-    if (!sectionData || typeof sectionData !== "object") continue;
-    for (const [tableKey, value] of Object.entries(sectionData as Record<string, unknown>)) {
-      if (!Array.isArray(value)) continue;
-      const prefix = `${sectionId}.${tableKey}`;
-      if (NO_CLONE.has(prefix)) continue;
-      let max = -1;
-      for (const m of out.matchAll(new RegExp(`\\{\\{${escapeRe(prefix)}\\.(\\d+)\\.`, "g"))) {
-        max = Math.max(max, Number(m[1]));
-      }
-      if (max < 0) continue;
-      while (max + 1 < value.length) {
-        const next = max + 1;
-        const rows = Array.from(out.matchAll(/<w:tr\b[\s\S]*?<\/w:tr>/g));
-        const startIdx = rows.findIndex((m) => m[0].includes(`{{${prefix}.${max}.`));
-        if (startIdx === -1) break;
-        let endIdx = startIdx;
-        const endKey = BLOCK_END_KEY[prefix];
-        if (endKey) {
-          const found = rows.findIndex(
-            (m, i) => i >= startIdx && m[0].includes(`{{${prefix}.${max}.${endKey}}}`),
-          );
-          if (found !== -1) endIdx = found;
-        }
-        const sourceRow = rows[startIdx];
-        const lastRow = rows[endIdx];
-        if (!sourceRow || !lastRow) break;
-        const start = sourceRow.index ?? 0;
-        const end = (lastRow.index ?? 0) + lastRow[0].length;
-        let clone = out.slice(start, end).replaceAll(`{{${prefix}.${max}.`, `{{${prefix}.${next}.`);
-        // Nomor urut yang tercetak di template (mis. "2. Company name") ikut dinaikkan.
-        const numbered = clone.replace(
-          /(<w:t(?:\s[^>]*)?>)(\d+)(\.)/,
-          (_m, open: string, _num: string, dot: string) => `${open}${next + 1}${dot}`,
-        );
-        clone =
-          numbered !== clone
-            ? numbered
-            : clone.replace(
-                /(<w:t(?:\s[^>]*)?>)(\d+)([\s]*)(<\/w:t>)/,
-                (_m, open: string, _num: string, rest: string, close: string) =>
-                  `${open}${next + 1}${rest}${close}`,
-              );
-        out = out.slice(0, end) + clone + out.slice(end);
-        max = next;
-      }
-    }
-  }
-  return out;
+function nonFormalText(data: ApplicationData): string {
+  const rows = (data["education"]?.["nonFormal"] ?? []) as Record<string, unknown>[];
+  return rows
+    .filter((r) => asText(r["name"]).trim() !== "")
+    .map(
+      (r) =>
+        `${asText(r["name"])} - ${asText(r["heldBy"])} (${asText(r["date"])}) ${asText(r["notes"])}`.trim(),
+    )
+    .join("\n");
 }
 
 /**
@@ -367,6 +306,7 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
   if (!response.ok) throw new Error("Template formulir Word tidak dapat dibaca.");
   const files = unzipSync(new Uint8Array(await response.arrayBuffer()));
   const docPath = "word/document.xml";
+  const extras = nonFormalText(data);
 
   let source = strFromU8(files[docPath]!);
   const signature = asText((data["declaration"] ?? {})["signature"]);
@@ -387,21 +327,13 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     source = source.replace(signatureRun, "");
   }
 
-  const xml = expandTemplateRows(source, data).replace(
-    /\{\{([a-zA-Z0-9._]+)\}\}/g,
-    (_all, path: string) => {
-      const value = resolvePath(data, path);
-      // Tingkat SD/SMP/SMA tidak punya jurusan: selnya tetap terisi strip.
-      if (/^education\.formal\.\d+\.major$/.test(path)) {
-        const level = String(resolvePath(data, path.replace(/\.major$/, ".level")) ?? "");
-        if (SCHOOL_LEVELS.includes(level) && asText(value).trim() === "") return "-";
-      }
-      if (value === true) return "√";
-      if (value === false || value === null || value === undefined)
-        return path.endsWith(".checked") ? "□" : "";
-      return escapeXml(String(value));
-    },
-  );
+  const xml = source.replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
+    if (path === "education.nonFormalText") return escapeXml(extras);
+    const value = resolvePath(data, path);
+    if (value === true) return "√";
+    if (value === false || value === null || value === undefined) return path.endsWith(".checked") ? "□" : "";
+    return escapeXml(String(value));
+  });
 
   files[docPath] = strToU8(tidyLayoutXml(xml));
   return zipSync(files, { level: 6 });
