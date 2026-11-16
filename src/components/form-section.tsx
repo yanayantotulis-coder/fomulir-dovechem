@@ -173,9 +173,9 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                           if (table.key === "formal" && col.key === "level") {
                             const level = String(value ?? "");
                             if (SCHOOL_LEVELS.includes(level)) {
-                              if (String(next.major ?? "").trim() === "") next.major = "-";
-                            } else if (String(next.major ?? "") === "-") {
-                              next.major = "";
+                              if (String(next["major"] ?? "").trim() === "") next["major"] = "-";
+                            } else if (String(next["major"] ?? "") === "-") {
+                              next["major"] = "";
                             }
                           }
                           return next;
@@ -192,7 +192,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                         <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
                           {col.label}
                         </label>
-                        {table.key === "formal" && col.key === "major" && SCHOOL_LEVELS.includes(String(row.level ?? "")) ? (
+                        {table.key === "formal" && col.key === "major" && SCHOOL_LEVELS.includes(String(row["level"] ?? "")) ? (
                           <Input id={id} aria-label={label} value="-" disabled className="bg-muted" />
                         ) : col.type === "checkbox" ? (
                           <div className="flex h-9 items-center">
