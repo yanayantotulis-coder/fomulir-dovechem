@@ -357,7 +357,7 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
   if (!response.ok) throw new Error("Template formulir Word tidak dapat dibaca.");
   const files = unzipSync(new Uint8Array(await response.arrayBuffer()));
   const docPath = "word/document.xml";
-  const extras = nonFormalText(data);
+  const docPath = "word/document.xml";
 
   let source = strFromU8(files[docPath]!);
   const signature = asText((data["declaration"] ?? {})["signature"]);

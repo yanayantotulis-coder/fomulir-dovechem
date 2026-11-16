@@ -366,7 +366,6 @@ export const FORM_SECTIONS: Section[] = [
           { key: "phone", label: "No Telepon" },
         ],
         rows: 2,
-        addable: true,
       },
     ],
   },
