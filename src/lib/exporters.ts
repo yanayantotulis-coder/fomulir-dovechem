@@ -383,13 +383,22 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     source = source.replace(signatureRun, "");
   }
 
-  const xml = source.replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
-    if (path === "education.nonFormalText") return escapeXml(extras);
-    const value = resolvePath(data, path);
-    if (value === true) return "√";
-    if (value === false || value === null || value === undefined) return path.endsWith(".checked") ? "□" : "";
-    return escapeXml(String(value));
-  });
+  const xml = expandTemplateRows(source, data).replace(
+    /\{\{([a-zA-Z0-9._]+)\}\}/g,
+    (_all, path: string) => {
+      if (path === "education.nonFormalText") return escapeXml(extras);
+      const value = resolvePath(data, path);
+      // Tingkat SD/SMP/SMA tidak punya jurusan: selnya tetap terisi strip.
+      if (/^education\.formal\.\d+\.major$/.test(path)) {
+        const level = String(resolvePath(data, path.replace(/\.major$/, ".level")) ?? "");
+        if (SCHOOL_LEVELS.includes(level) && asText(value).trim() === "") return "-";
+      }
+      if (value === true) return "√";
+      if (value === false || value === null || value === undefined)
+        return path.endsWith(".checked") ? "□" : "";
+      return escapeXml(String(value));
+    },
+  );
 
   files[docPath] = strToU8(tidyLayoutXml(xml));
   return zipSync(files, { level: 6 });
