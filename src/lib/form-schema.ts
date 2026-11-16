@@ -550,7 +550,13 @@ export function mergeWithEmpty(stored: unknown): ApplicationData {
     for (const row of formal as Record<string, unknown>[]) {
       const mapped = LEGACY_EDU_LEVELS[String(row["level"] ?? "")];
       if (mapped) row["level"] = mapped;
-      if (SCHOOL_LEVELS.includes(String(row["level"] ?? ""))) row["major"] = "-";
+      const level = String(row["level"] ?? "");
+      if (SCHOOL_LEVELS.includes(level)) {
+        row["major"] = "-";
+      } else if (String(row["major"] ?? "").trim() === "-") {
+        // strip lama dari jenjang SD/SMP/SMA tidak boleh menempel di jenjang tinggi
+        row["major"] = "";
+      }
     }
   }
   return base;
