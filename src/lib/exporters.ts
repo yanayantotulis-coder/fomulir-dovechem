@@ -1,4 +1,4 @@
-import { type ApplicationData } from "./form-schema";
+import { SCHOOL_LEVELS, type ApplicationData } from "./form-schema";
 
 const asText = (value: unknown): string => {
   if (value === true) return "Ya";
