@@ -326,8 +326,9 @@ function expandTemplateRows(xml: string, data: ApplicationData): string {
           numbered !== clone
             ? numbered
             : clone.replace(
-                /(<w:t(?:\s[^>]*)?>)(\d+)(<\/w:t>)/,
-                (_m, open: string, _num: string, close: string) => `${open}${next + 1}${close}`,
+                /(<w:t(?:\s[^>]*)?>)(\d+)([\s]*)(<\/w:t>)/,
+                (_m, open: string, _num: string, rest: string, close: string) =>
+                  `${open}${next + 1}${rest}${close}`,
               );
         out = out.slice(0, end) + clone + out.slice(end);
         max = next;
