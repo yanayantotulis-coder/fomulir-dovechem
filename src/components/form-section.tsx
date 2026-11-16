@@ -1,5 +1,6 @@
 import {
   LANGUAGE_LEVELS,
+  SCHOOL_LEVELS,
   isFieldRequired,
   isTableRequired,
   type Section,
@@ -169,14 +170,16 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                         <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
                           {col.label}
                         </label>
-                        {col.type === "checkbox" ? (
+                        {table.key === "formal" && col.key === "major" && presetLabel && SCHOOL_LEVELS.includes(presetLabel) ? (
+                          <Input id={id} aria-label={label} value="-" disabled className="bg-muted" />
+                        ) : col.type === "checkbox" ? (
                           <div className="flex h-9 items-center">
                             <Checkbox id={id} aria-label={label} checked={row[col.key] === true || row[col.key] === "true"} onCheckedChange={(value) => updateCell(value === true)} />
                           </div>
                         ) : col.type === "select" ? (
                           <Select value={String(row[col.key] ?? "")} onValueChange={updateCell}>
                             <SelectTrigger id={id} aria-label={label} className="bg-background"><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                            <SelectContent>{LANGUAGE_LEVELS.map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                            <SelectContent>{(col.options ?? LANGUAGE_LEVELS).map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
                           </Select>
                         ) : col.type === "textarea" ? (
                           <Textarea id={id} aria-label={label} rows={3} className="bg-background" value={String(row[col.key] ?? "")} onChange={(e) => updateCell(e.target.value)} />

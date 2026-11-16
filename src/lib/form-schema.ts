@@ -16,7 +16,11 @@ export type Field = {
   full?: boolean;
 };
 
-export type TableColumn = { key: string; label: string; type?: FieldType; width?: number };
+export type TableColumn = { key: string; label: string; type?: FieldType; width?: number; options?: string[] };
+
+/** Jenjang sekolah dasar–menengah: jurusan otomatis diisi "-". */
+export const SCHOOL_LEVELS = ["SD / Elementary School", "SMP / Junior High School", "SMA / SMK / Senior High School"];
+export const HIGHER_EDU_LEVELS = ["D1", "D2", "D3", "D4", "S1 / Bachelor", "S2 / Master", "S3 / Doctoral"];
 
 export type TableDef = {
   key: string;
@@ -164,7 +168,7 @@ export const FORM_SECTIONS: Section[] = [
         label: "Formal Education",
         labelId: "Pendidikan Formal",
         columns: [
-          { key: "level", label: "Tingkat / Level" },
+          { key: "level", label: "Tingkat / Level", type: "select", options: HIGHER_EDU_LEVELS },
           { key: "school", label: "Sekolah / Perguruan Tinggi" },
           { key: "major", label: "Jurusan / Major" },
           { key: "from", label: "Dari (Bln/Thn)" },
@@ -172,7 +176,7 @@ export const FORM_SECTIONS: Section[] = [
           { key: "gpa", label: "IPK / GPA" },
         ],
         rows: 4,
-        presets: ["SLTA / High School", "Diploma", "S1 / Bachelor", "S2 / Master"],
+        presets: [...SCHOOL_LEVELS, ""],
         addable: true,
       },
       {
@@ -511,6 +515,7 @@ export function createEmptyData(): ApplicationData {
         const row: Record<string, unknown> = {};
         table.columns.forEach((col, ci) => {
           if (ci === 0 && table.presets) row[col.key] = table.presets[i] ?? "";
+          else if (table.key === "formal" && col.key === "major" && SCHOOL_LEVELS.includes(table.presets?.[i] ?? "")) row[col.key] = "-";
           else row[col.key] = col.type === "checkbox" ? false : "";
         });
         return row;
