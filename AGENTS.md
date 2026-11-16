@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep unavailable-answer values as literal hyphens through form validation and draft normalization; date controls expose an explicit unavailable option so the same value can be saved without invalid native date input.
+- Use Bun's built-in test runner for form-schema rules so focused validation tests need no additional test dependency.

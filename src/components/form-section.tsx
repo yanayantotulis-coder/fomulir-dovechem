@@ -76,7 +76,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                 <SelectValue placeholder="Pilih..." />
               </SelectTrigger>
               <SelectContent>
-                {(field.options ?? []).map((opt) => (
+                {Array.from(new Set([...(field.options ?? []), "-"])).map((opt) => (
                   <SelectItem key={opt} value={opt}>
                     {opt}
                   </SelectItem>
@@ -99,12 +99,21 @@ export function FormSection({ section, data, onChange, errors }: Props) {
           ) : (
             <Input
               id={id}
-              type={field.type === "date" ? "date" : field.type === "email" ? "email" : "text"}
+              type={value === "-" ? "text" : field.type === "date" ? "date" : "text"}
+              disabled={field.type === "date" && value === "-"}
+              inputMode={field.type === "email" && value !== "-" ? "email" : undefined}
+              placeholder={field.type === "date" ? undefined : "Isi jawaban atau - jika tidak ada"}
               value={String(value ?? "")}
               onChange={(e) => onChange(section.id, field.key, e.target.value)}
             />
           )}
         </div>
+        {field.type === "date" ? (
+          <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <Checkbox checked={value === "-"} onCheckedChange={(checked) => onChange(section.id, field.key, checked === true ? "-" : "")} />
+            Tidak ada jawaban (isi -)
+          </label>
+        ) : null}
         {error ? <p className="mt-1 text-xs font-medium text-destructive">{error}</p> : null}
       </div>
     );
@@ -126,6 +135,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
             <span className="ml-1 font-normal text-muted-foreground/60">(opsional)</span>
           )}
         </h4>
+        <p className="mt-1 text-xs text-muted-foreground">Jika tidak ada jawaban atau tidak dapat dijawab, cukup isi strip (-).</p>
         {tableError ? <p className="mt-1 text-xs font-medium text-destructive">{tableError}</p> : null}
         <div className="mt-3 space-y-3">
           {rows.length === 0 ? (
@@ -181,7 +191,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                           return next;
                         }),
                       );
-                    const selectOptions = col.options ?? LANGUAGE_LEVELS;
+                    const selectOptions = Array.from(new Set([...(col.options ?? LANGUAGE_LEVELS), "-"]));
                     const currentSelect = String(row[col.key] ?? "");
                     const selectList =
                       currentSelect && !selectOptions.includes(currentSelect)
@@ -219,8 +229,8 @@ export function FormSection({ section, data, onChange, errors }: Props) {
                             id={id}
                             aria-label={label}
                             className="bg-background"
-                            type={col.type === "date" ? "date" : "text"}
-                            placeholder={col.label}
+                            type="text"
+                            placeholder="Isi jawaban atau - jika tidak ada"
                             value={String(row[col.key] ?? "")}
                             onChange={(e) => updateCell(e.target.value)}
                           />
@@ -256,6 +266,7 @@ export function FormSection({ section, data, onChange, errors }: Props) {
         </p>
         <h2 className="mt-1 font-display text-xl font-bold text-foreground">{section.title}</h2>
         <p className="text-sm text-muted-foreground">{section.titleId}</p>
+        <p className="mt-3 text-sm font-medium text-foreground">Jika tidak ada jawaban atau tidak dapat dijawab, cukup isi strip (-). Tanda tangan, persetujuan, dan dokumen wajib tetap harus dilengkapi.</p>
         {section.note ? (
           <p className="mt-3 rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
             {section.note}
