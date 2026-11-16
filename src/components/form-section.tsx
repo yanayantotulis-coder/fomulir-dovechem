@@ -126,77 +126,78 @@ export function FormSection({ section, data, onChange, errors }: Props) {
           )}
         </h4>
         {tableError ? <p className="mt-1 text-xs font-medium text-destructive">{tableError}</p> : null}
-        <div className="mt-3 overflow-x-auto rounded-md border border-border">
-          <table className="w-full min-w-[720px] border-collapse text-sm">
-            <thead className="bg-muted/60">
-              <tr>
-                {table.columns.map((col) => (
-                  <th
-                    key={col.key}
-                    className="border-b border-border px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                  >
-                    {col.label}
-                  </th>
-                ))}
-                {table.addable ? <th className="w-10 border-b border-border" /> : null}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr key={rowIndex} className="even:bg-muted/20">
+        <div className="mt-3 space-y-3">
+          {rows.length === 0 ? (
+            <p className="rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+              Belum ada data. Klik "Tambah baris" untuk mengisi.
+            </p>
+          ) : null}
+          {rows.map((row, rowIndex) => {
+            const firstCol = table.columns[0];
+            const presetLabel =
+              table.presets && firstCol && table.presets.includes(String(row[firstCol.key] ?? "")) && row[firstCol.key]
+                ? String(row[firstCol.key])
+                : null;
+            return (
+              <div key={rowIndex} className="rounded-lg border border-border bg-muted/20 p-4">
+                <div className="mb-3 flex items-center justify-between gap-2 border-b border-border pb-2">
+                  <span className="text-sm font-semibold text-foreground">
+                    {presetLabel ?? `${table.labelId} #${rowIndex + 1}`}
+                  </span>
+                  {table.addable ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive"
+                      aria-label="Hapus baris"
+                      onClick={() => setTableRows(table, rows.filter((_, i) => i !== rowIndex))}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" /> Hapus
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {table.columns.map((col, colIndex) => {
-                    const locked = Boolean(table.presets && colIndex === 0 && table.presets.includes(String(row[col.key] ?? "")) && row[col.key]);
+                    if (presetLabel && colIndex === 0) return null;
+                    const id = `${section.id}-${table.key}-${rowIndex}-${col.key}`;
                     const label = `${table.labelId}, baris ${rowIndex + 1}, ${col.label}`;
-                    const updateCell = (value: unknown) => setTableRows(table, rows.map((r, i) => i === rowIndex ? { ...r, [col.key]: value } : r));
+                    const updateCell = (value: unknown) =>
+                      setTableRows(table, rows.map((r, i) => (i === rowIndex ? { ...r, [col.key]: value } : r)));
                     return (
-                      <td key={col.key} className="border-b border-border/70 px-1.5 py-1">
-                        {locked ? (
-                          <span className="block px-1 text-xs font-medium text-foreground">
-                            {String(row[col.key] ?? "")}
-                          </span>
-                         ) : col.type === "checkbox" ? (
-                           <Checkbox aria-label={label} checked={row[col.key] === true || row[col.key] === "true"} onCheckedChange={(value) => updateCell(value === true)} />
-                         ) : col.type === "select" ? (
-                           <Select value={String(row[col.key] ?? "")} onValueChange={updateCell}>
-                             <SelectTrigger aria-label={label}><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                             <SelectContent>{LANGUAGE_LEVELS.map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
-                           </Select>
-                         ) : col.type === "textarea" ? (
-                           <Textarea aria-label={label} rows={3} value={String(row[col.key] ?? "")} onChange={(e) => updateCell(e.target.value)} />
-                         ) : (
+                      <div key={col.key} className={col.type === "textarea" ? "sm:col-span-2 lg:col-span-3" : ""}>
+                        <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
+                          {col.label}
+                        </label>
+                        {col.type === "checkbox" ? (
+                          <div className="flex h-9 items-center">
+                            <Checkbox id={id} aria-label={label} checked={row[col.key] === true || row[col.key] === "true"} onCheckedChange={(value) => updateCell(value === true)} />
+                          </div>
+                        ) : col.type === "select" ? (
+                          <Select value={String(row[col.key] ?? "")} onValueChange={updateCell}>
+                            <SelectTrigger id={id} aria-label={label} className="bg-background"><SelectValue placeholder="Pilih..." /></SelectTrigger>
+                            <SelectContent>{LANGUAGE_LEVELS.map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                          </Select>
+                        ) : col.type === "textarea" ? (
+                          <Textarea id={id} aria-label={label} rows={3} className="bg-background" value={String(row[col.key] ?? "")} onChange={(e) => updateCell(e.target.value)} />
+                        ) : (
                           <Input
-                             aria-label={label}
-                            className="h-9 border-0 bg-transparent shadow-none focus-visible:ring-1"
+                            id={id}
+                            aria-label={label}
+                            className="bg-background"
                             type={col.type === "date" ? "date" : "text"}
+                            placeholder={col.label}
                             value={String(row[col.key] ?? "")}
-                            onChange={(e) => {
-                              const next = rows.map((r, i) =>
-                                i === rowIndex ? { ...r, [col.key]: e.target.value } : r,
-                              );
-                              setTableRows(table, next);
-                            }}
+                            onChange={(e) => updateCell(e.target.value)}
                           />
                         )}
-                      </td>
+                      </div>
                     );
                   })}
-                  {table.addable ? (
-                    <td className="border-b border-border/70 px-1 py-1 text-center">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Hapus baris"
-                        onClick={() => setTableRows(table, rows.filter((_, i) => i !== rowIndex))}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                </div>
+              </div>
+            );
+          })}
         </div>
         {table.addable ? (
           <Button
