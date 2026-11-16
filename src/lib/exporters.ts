@@ -266,27 +266,17 @@ function resolvePath(data: ApplicationData, path: string): unknown {
   return current;
 }
 
-/** Baris non-formal yang punya tempat sendiri di tabel template (3 baris). */
-const NON_FORMAL_TEMPLATE_ROWS = 3;
+/** Tabel yang bloknya terdiri dari beberapa baris (satu entri = beberapa baris). */
+const BLOCK_END_KEY: Record<string, string> = {
+  "work.jobs": "reasonLeave",
+  "references.refs": "relation",
+};
 
 /**
- * Isi tabel Pendidikan Non Formal. Tiga entri pertama sudah punya baris sendiri
- * di template, jadi cell ini hanya menampung entri selebihnya.
+ * Tabel yang tidak bisa ditambah baris: kolomnya sudah melebar untuk beberapa
+ * orang (kontak darurat), jadi menambah entri tidak punya tempat di formulir.
  */
-function nonFormalText(data: ApplicationData): string {
-  const rows = (data["education"]?.["nonFormal"] ?? []) as Record<string, unknown>[];
-  return rows
-    .slice(NON_FORMAL_TEMPLATE_ROWS)
-    .filter((r) => asText(r["name"]).trim() !== "")
-    .map(
-      (r) =>
-        `${asText(r["name"])} - ${asText(r["heldBy"])} (${asText(r["date"])}) ${asText(r["notes"])}`.trim(),
-    )
-    .join("\n");
-}
-
-/** Tabel yang bloknya terdiri dari beberapa baris (satu entri = beberapa baris). */
-const BLOCK_END_KEY: Record<string, string> = { "work.jobs": "reasonLeave" };
+const NO_CLONE = new Set(["references.emergency"]);
 
 const escapeRe = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -302,6 +292,7 @@ function expandTemplateRows(xml: string, data: ApplicationData): string {
     for (const [tableKey, value] of Object.entries(sectionData as Record<string, unknown>)) {
       if (!Array.isArray(value)) continue;
       const prefix = `${sectionId}.${tableKey}`;
+      if (NO_CLONE.has(prefix)) continue;
       let max = -1;
       for (const m of out.matchAll(new RegExp(`\\{\\{${escapeRe(prefix)}\\.(\\d+)\\.`, "g"))) {
         max = Math.max(max, Number(m[1]));
