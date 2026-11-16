@@ -311,8 +311,11 @@ function expandTemplateRows(xml: string, data: ApplicationData): string {
           );
           if (found !== -1) endIdx = found;
         }
-        const start = rows[startIdx].index ?? 0;
-        const end = (rows[endIdx].index ?? 0) + rows[endIdx][0].length;
+        const sourceRow = rows[startIdx];
+        const lastRow = rows[endIdx];
+        if (!sourceRow || !lastRow) break;
+        const start = sourceRow.index ?? 0;
+        const end = (lastRow.index ?? 0) + lastRow[0].length;
         let clone = out.slice(start, end).replaceAll(`{{${prefix}.${max}.`, `{{${prefix}.${next}.`);
         // Nomor urut yang tercetak di template (mis. "2. Company name") ikut dinaikkan.
         clone = clone.replace(
@@ -356,7 +359,6 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
   const response = await fetch(templateUrl);
   if (!response.ok) throw new Error("Template formulir Word tidak dapat dibaca.");
   const files = unzipSync(new Uint8Array(await response.arrayBuffer()));
-  const docPath = "word/document.xml";
   const docPath = "word/document.xml";
 
   let source = strFromU8(files[docPath]!);
