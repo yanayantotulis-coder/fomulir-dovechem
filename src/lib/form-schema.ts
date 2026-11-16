@@ -540,6 +540,12 @@ export function mergeWithEmpty(stored: unknown): ApplicationData {
       }
     }
   }
+  const formal = (base["education"] ?? {})["formal"];
+  if (Array.isArray(formal)) {
+    for (const row of formal as Record<string, unknown>[]) {
+      if (SCHOOL_LEVELS.includes(String(row.level ?? ""))) row.major = "-";
+    }
+  }
   return base;
 }
 
