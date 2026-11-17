@@ -145,7 +145,7 @@ const PHOTO_REL_ID = "rIdFotoKandidat";
 const PHOTO_BOX_PT = { width: 111.9, height: 119.5 };
 
 /** Unduh foto kandidat lalu potong tepat (tengah) seukuran kotak foto di template. */
-async function loadPhotoJpeg(path: string): Promise<Uint8Array> {
+async function loadPhotoJpeg(path: string): Promise<Uint8Array<ArrayBuffer>> {
   const { supabase } = await import("@/integrations/supabase/client");
   const { data, error } = await supabase.storage.from("candidate-files").download(path);
   if (error || !data) throw error ?? new Error("Foto tidak ditemukan");
