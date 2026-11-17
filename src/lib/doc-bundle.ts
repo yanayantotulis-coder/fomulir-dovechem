@@ -108,7 +108,7 @@ export async function downloadCandidateFullZip(
 ) {
   const { buildDocxBytes } = await import("./exporters");
   const tree: ZipTree = {
-    [`00-Formulir_Lamaran_${safe(candidateName)}.docx`]: await buildDocxBytes(data),
+    [`00-Formulir_Lamaran_${safe(candidateName)}.docx`]: await buildDocxBytes(data, docs.find((d) => d.doc_type === "photo")?.file_path),
   };
   Object.assign(tree, await collect(docs, "", { n: 0 }));
   await zipAndSave(tree, `Bank_Data_${safe(candidateName)}.zip`);
@@ -123,7 +123,10 @@ export async function downloadAllCandidatesFullZip(
   const tree: ZipTree = {};
   for (const group of groups) {
     const folder = `${safe(group.name)}/`;
-    tree[`${folder}00-Formulir_Lamaran_${safe(group.name)}.docx`] = await buildDocxBytes(group.data);
+    tree[`${folder}00-Formulir_Lamaran_${safe(group.name)}.docx`] = await buildDocxBytes(
+      group.data,
+      group.docs.find((d) => d.doc_type === "photo")?.file_path,
+    );
     Object.assign(tree, await collect(group.docs, folder, { n: 0 }));
   }
   await zipAndSave(tree, `Bank_Data_Kandidat_${new Date().toISOString().slice(0, 10)}.zip`);
