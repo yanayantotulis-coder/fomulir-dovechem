@@ -332,9 +332,9 @@ function HrPage() {
                         <Download aria-hidden="true" />
                         {zipBusy === r.id ? "Menyiapkan..." : "Unduh lengkap"}
                       </Button>
-                      <Button size="icon" variant="outline" title="Unduh formulir PDF" aria-label="Unduh formulir PDF" onClick={() => downloadPdf(r.data)}><FileText aria-hidden="true" /></Button>
-                      <Button size="icon" variant="outline" title="Unduh formulir Word" aria-label="Unduh formulir Word" onClick={() => downloadDocx(r.data)}><FileText aria-hidden="true" /></Button>
-                      <Button size="icon" variant="outline" title="Unduh data Excel" aria-label="Unduh data Excel" onClick={() => downloadXlsx(r.data)}><FileSpreadsheet aria-hidden="true" /></Button>
+                      <Button size="icon" variant="outline" title="Unduh formulir PDF" aria-label="Unduh formulir PDF" onClick={() => downloadPdf(r.data, docs.find((d) => d.doc_type === "photo")?.file_path)}><FileText aria-hidden="true" /></Button>
+                      <Button size="icon" variant="outline" title="Unduh formulir Word" aria-label="Unduh formulir Word" onClick={() => downloadDocx(r.data, docs.find((d) => d.doc_type === "photo")?.file_path)}><FileText aria-hidden="true" /></Button>
+                      <Button size="icon" variant="outline" title="Unduh data Excel" aria-label="Unduh data Excel" onClick={() => downloadXlsx(r.data, docs.find((d) => d.doc_type === "photo")?.file_path)}><FileSpreadsheet aria-hidden="true" /></Button>
                       <Button
                         size="icon"
                         variant="outline"

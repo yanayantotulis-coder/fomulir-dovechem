@@ -16,13 +16,13 @@ export function fileBaseName(data: ApplicationData) {
  * PDF dibuat dari berkas Word template resmi yang sudah terisi data kandidat,
  * jadi susunan halaman PDF mengikuti formulir Word (tinggal konversi).
  */
-export async function downloadPdf(data: ApplicationData) {
+export async function downloadPdf(data: ApplicationData, photoPath?: string | null) {
   const [{ default: JsPDF }, { default: html2canvas }, { renderAsync }, docxBytes] =
     await Promise.all([
       import("jspdf"),
       import("html2canvas"),
       import("docx-preview"),
-      buildDocxBytes(data),
+      buildDocxBytes(data, photoPath),
     ]);
 
   const frame = document.createElement("iframe");
@@ -140,6 +140,63 @@ export async function downloadPdf(data: ApplicationData) {
 
 
 const SIGNATURE_REL_ID = "rIdTandaTangan";
+const PHOTO_REL_ID = "rIdFotoKandidat";
+// Ukuran kotak foto pada template Word (112,9 x 120,5 pt), dikurangi garis bingkai.
+const PHOTO_BOX_PT = { width: 111.9, height: 119.5 };
+
+/** Unduh foto kandidat lalu potong tepat (tengah) seukuran kotak foto di template. */
+async function loadPhotoJpeg(path: string): Promise<Uint8Array<ArrayBuffer>> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data, error } = await supabase.storage.from("candidate-files").download(path);
+  if (error || !data) throw error ?? new Error("Foto tidak ditemukan");
+  const url = URL.createObjectURL(data);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("Foto tidak dapat dibaca"));
+      el.src = url;
+    });
+    const targetRatio = PHOTO_BOX_PT.width / PHOTO_BOX_PT.height;
+    let sw = image.naturalWidth;
+    let sh = image.naturalHeight;
+    if (sw / sh > targetRatio) sw = Math.round(sh * targetRatio);
+    else sh = Math.round(sw / targetRatio);
+    const sx = Math.round((image.naturalWidth - sw) / 2);
+    const sy = Math.round((image.naturalHeight - sh) / 2);
+    const canvas = document.createElement("canvas");
+    canvas.width = 600;
+    canvas.height = Math.round(600 / targetRatio);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas tidak tersedia");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    const jpeg = canvas.toDataURL("image/jpeg", 0.92);
+    return base64ToBytes(jpeg.slice(jpeg.indexOf(",") + 1));
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function photoParagraphXml(): string {
+  const cx = Math.round(PHOTO_BOX_PT.width * 12700);
+  const cy = Math.round(PHOTO_BOX_PT.height * 12700);
+  return (
+    `<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/><w:ind w:left="0" w:right="0" w:firstLine="0"/><w:jc w:val="center"/></w:pPr>` +
+    `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">` +
+    `<wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/>` +
+    `<wp:docPr id="1002" name="FotoKandidat" descr="Foto kandidat 3x4"/>` +
+    `<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>` +
+    `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+    `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+    `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+    `<pic:nvPicPr><pic:cNvPr id="1002" name="foto-kandidat.jpg"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    `<pic:blipFill><a:blip r:embed="${PHOTO_REL_ID}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+    `</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`
+  );
+}
 
 function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
   const binary = atob(base64);
@@ -297,7 +354,10 @@ function tidyLayoutXml(xml: string): string {
   return out;
 }
 
-export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array> {
+export async function buildDocxBytes(
+  data: ApplicationData,
+  photoPath?: string | null,
+): Promise<Uint8Array> {
   const [{ unzipSync, zipSync, strFromU8, strToU8 }, templateUrl] = await Promise.all([
     import("fflate"),
     import("@/assets/formulir-dover-template.docx?url").then((m) => m.default as string),
@@ -327,6 +387,27 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
     source = source.replace(signatureRun, "");
   }
 
+  const photo = photoPath ? await loadPhotoJpeg(photoPath).catch(() => null) : null;
+  if (photo) {
+    files["word/media/foto-kandidat.jpg"] = photo;
+    const relsPath = "word/_rels/document.xml.rels";
+    files[relsPath] = strToU8(
+      strFromU8(files[relsPath]!).replace(
+        "</Relationships>",
+        `<Relationship Id="${PHOTO_REL_ID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/foto-kandidat.jpg"/></Relationships>`,
+      ),
+    );
+    const typesPath = "[Content_Types].xml";
+    const types = strFromU8(files[typesPath]!);
+    if (!/Extension="jpe?g"/i.test(types))
+      files[typesPath] = strToU8(
+        types.replace("</Types>", `<Default Extension="jpg" ContentType="image/jpeg"/></Types>`),
+      );
+    source = source
+      .replace(/<w:txbxContent>[\s\S]*?<\/w:txbxContent>/g, `<w:txbxContent>${photoParagraphXml()}</w:txbxContent>`)
+      .replace('lIns="91440" tIns="45720" rIns="91440" bIns="45720"', 'lIns="0" tIns="0" rIns="0" bIns="0"');
+  }
+
   const xml = source.replace(/\{\{([a-zA-Z0-9._]+)\}\}/g, (_all, path: string) => {
     if (path === "education.nonFormalText") return escapeXml(extras);
     const value = resolvePath(data, path);
@@ -339,8 +420,8 @@ export async function buildDocxBytes(data: ApplicationData): Promise<Uint8Array>
   return zipSync(files, { level: 6 });
 }
 
-export async function downloadDocx(data: ApplicationData) {
-  const zipped = await buildDocxBytes(data);
+export async function downloadDocx(data: ApplicationData, photoPath?: string | null) {
+  const zipped = await buildDocxBytes(data, photoPath);
   triggerDownload(
     new Blob([zipped as unknown as BlobPart], {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -353,11 +434,11 @@ export async function downloadDocx(data: ApplicationData) {
  * Excel juga diambil dari berkas Word template yang sudah terisi,
  * sehingga baris/kolomnya mengikuti isi formulir resmi.
  */
-export async function downloadXlsx(data: ApplicationData) {
+export async function downloadXlsx(data: ApplicationData, photoPath?: string | null) {
   const [XLSX, { docxToBlocks }, docxBytes] = await Promise.all([
     import("xlsx"),
     import("./docx-render"),
-    buildDocxBytes(data),
+    buildDocxBytes(data, photoPath),
   ]);
   const blocks = await docxToBlocks(docxBytes);
   const aoa: string[][] = [];
